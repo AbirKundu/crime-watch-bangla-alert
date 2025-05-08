@@ -1,7 +1,5 @@
-
 import React from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { User } from 'lucide-react';
 
 export interface TeamMemberProps {
   name: string;
@@ -11,7 +9,6 @@ export interface TeamMemberProps {
 }
 
 const TeamMember: React.FC<TeamMemberProps> = ({ name, role, image, initials }) => {
-  // Get initials from name if not provided
   const derivedInitials = initials || name
     .split(' ')
     .map(part => part[0])
