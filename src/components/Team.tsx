@@ -15,7 +15,7 @@ const Team = () => {
   ];
 
   return (
-    <div className="flex flex-wrap justify-center gap-6">
+    <div className="flex flex-wrap justify-center gap-8 py-4">
       {teamMembers.map((member, index) => (
         <TeamMember key={index} {...member} />
       ))}
