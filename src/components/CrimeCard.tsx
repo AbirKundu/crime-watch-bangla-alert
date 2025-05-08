@@ -12,6 +12,7 @@ export interface CrimeIncident {
   type: string;
   description: string;
   severity: 'high' | 'medium' | 'low';
+  imageUrl?: string;
 }
 
 interface CrimeCardProps {
@@ -27,6 +28,15 @@ const CrimeCard: React.FC<CrimeCardProps> = ({ incident }) => {
 
   return (
     <Card className="overflow-hidden border-border/50 bg-card/70 backdrop-blur-sm hover:bg-card/90 transition-colors">
+      {incident.imageUrl && (
+        <div className="w-full h-48 overflow-hidden">
+          <img 
+            src={incident.imageUrl} 
+            alt={incident.title} 
+            className="w-full h-full object-cover object-center hover:scale-105 transition-transform duration-300"
+          />
+        </div>
+      )}
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg font-bold">{incident.title}</CardTitle>

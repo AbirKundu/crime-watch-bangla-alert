@@ -2,7 +2,6 @@
 import React from 'react';
 import { MapPin } from 'lucide-react';
 
-// In a real application, this would be replaced with a proper map integration like Google Maps or Mapbox
 const CrimeMap = ({ fullHeight = false }) => {
   // Mock crime incidents - in real app would come from an API
   const incidents = [
@@ -14,18 +13,13 @@ const CrimeMap = ({ fullHeight = false }) => {
   ];
 
   return (
-    <div className={`relative w-full ${fullHeight ? 'h-[calc(100vh-11rem)]' : 'h-[400px]'} bg-secondary/50 rounded-lg overflow-hidden`}>
-      {/* This is a placeholder map background */}
-      <div className="absolute inset-0 bg-[url('https://miro.medium.com/max/1400/1*qYUvh-EtES8dtgKiBRiLsA.png')] bg-cover bg-center opacity-50"></div>
-      
-      {/* Map overlay with grid lines */}
-      <div className="absolute inset-0 bg-secondary bg-opacity-70">
-        <div className="h-full w-full grid grid-cols-8 grid-rows-8">
-          {Array.from({ length: 64 }).map((_, i) => (
-            <div key={i} className="border border-border/20"></div>
-          ))}
-        </div>
-      </div>
+    <div className={`relative w-full ${fullHeight ? 'h-[calc(100vh-11rem)]' : 'h-[400px]'} rounded-lg overflow-hidden`}>
+      {/* OpenStreetMap of Bangladesh */}
+      <iframe 
+        src="https://www.openstreetmap.org/export/embed.html?bbox=88.0,20.5,92.7,26.7&amp;layer=mapnik" 
+        className="absolute inset-0 w-full h-full border-0"
+        title="OpenStreetMap of Bangladesh"
+      ></iframe>
       
       {/* Incident markers */}
       {incidents.map((incident) => (
@@ -55,7 +49,7 @@ const CrimeMap = ({ fullHeight = false }) => {
       
       {/* Map attribution */}
       <div className="absolute bottom-2 right-2 text-xs text-foreground/70 bg-background/50 px-2 py-1 rounded">
-        CrimeWatch Map (Simulated)
+        © OpenStreetMap contributors
       </div>
     </div>
   );

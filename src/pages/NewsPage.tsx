@@ -16,7 +16,8 @@ const allIncidents: CrimeIncident[] = [
     time: "Today, 2:30 PM",
     type: "Robbery",
     description: "Two armed individuals robbed a convenience store. Police are investigating. No injuries reported.",
-    severity: "high"
+    severity: "high",
+    imageUrl: "https://images.unsplash.com/photo-1617839647662-8b478d2df9c1?ixlib=rb-4.0.3&q=85&w=1920&h=1080&crop=entropy&cs=srgb"
   },
   {
     id: 2,
@@ -25,7 +26,8 @@ const allIncidents: CrimeIncident[] = [
     time: "Today, 11:15 AM",
     type: "Theft",
     description: "Multiple vehicles reported broken into with valuables stolen from inside.",
-    severity: "medium"
+    severity: "medium",
+    imageUrl: "https://images.unsplash.com/photo-1607250149983-5b88a5d54ac6?ixlib=rb-4.0.3&q=85&w=1920&h=1080&crop=entropy&cs=srgb"
   },
   {
     id: 3,
@@ -34,7 +36,8 @@ const allIncidents: CrimeIncident[] = [
     time: "Yesterday, 9:45 PM",
     type: "Suspicious",
     description: "Residents reported suspicious individuals surveilling residences in the area.",
-    severity: "low"
+    severity: "low",
+    imageUrl: "https://images.unsplash.com/photo-1494891848038-7bd202a2afeb?q=80&w=1920&h=1080&crop=entropy&cs=tinysrgb"
   },
   {
     id: 4,
@@ -43,7 +46,8 @@ const allIncidents: CrimeIncident[] = [
     time: "Yesterday, 6:20 PM",
     type: "Theft",
     description: "A person's phone was snatched while they were walking. Suspects fled on a motorcycle.",
-    severity: "medium"
+    severity: "medium",
+    imageUrl: "https://images.unsplash.com/photo-1589578527966-fdac0f44566c?q=80&w=1920&h=1080&crop=entropy&cs=tinysrgb"
   },
   {
     id: 5,
@@ -52,7 +56,8 @@ const allIncidents: CrimeIncident[] = [
     time: "2 days ago, 3:15 AM",
     type: "Burglary",
     description: "A residence was broken into while occupants were sleeping. Electronics and jewelry stolen.",
-    severity: "high"
+    severity: "high",
+    imageUrl: "https://images.unsplash.com/photo-1527576539890-dfa815648363?q=80&w=1920&h=1080&crop=entropy&cs=tinysrgb"
   },
   {
     id: 6,
@@ -61,12 +66,13 @@ const allIncidents: CrimeIncident[] = [
     time: "2 days ago, 10:40 AM",
     type: "Fraud",
     description: "Multiple residents reporting unauthorized transactions. Local bank investigating.",
-    severity: "medium"
+    severity: "medium",
+    imageUrl: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?q=80&w=1920&h=1080&crop=entropy&cs=tinysrgb"
   },
 ];
 
 // Government updates
-const governmentUpdates = [
+const governmentUpdates: CrimeIncident[] = [
   {
     id: 101,
     title: "Police Increase Patrols in Gulshan Area",
@@ -74,7 +80,8 @@ const governmentUpdates = [
     time: "Today, 9:00 AM",
     type: "Police",
     description: "Due to recent incidents, police have increased patrol frequency in Gulshan residential areas.",
-    severity: "low"
+    severity: "low",
+    imageUrl: "https://images.unsplash.com/photo-1525727803-9558be27be37?q=80&w=1920&h=1080&crop=entropy&cs=tinysrgb"
   },
   {
     id: 102,
@@ -83,7 +90,8 @@ const governmentUpdates = [
     time: "Yesterday, 11:00 AM",
     type: "Traffic",
     description: "Authorities announce new traffic control measures to reduce congestion and improve safety.",
-    severity: "low"
+    severity: "low",
+    imageUrl: "https://images.unsplash.com/photo-1621252179027-9a4faa3f430d?q=80&w=1920&h=1080&crop=entropy&cs=tinysrgb"
   },
   {
     id: 103,
@@ -92,7 +100,8 @@ const governmentUpdates = [
     time: "3 days ago, 2:30 PM",
     type: "Government",
     description: "Government launches new initiative to combat corruption in public services.",
-    severity: "medium"
+    severity: "medium",
+    imageUrl: "https://images.unsplash.com/photo-1466442929976-97f336a657be?q=80&w=1920&h=1080&crop=entropy&cs=tinysrgb"
   },
 ];
 
