@@ -8,9 +8,9 @@ import member3 from '@/components/picture/member3.jpg';
 
 const Team = () => {
   const teamMembers = [
-    { name: 'Alice Johnson', role: 'Project Manager', image: member1 },
-    { name: 'Bob Smith', role: 'Frontend Developer', image: member2 },
-    { name: 'Clara Lee', role: 'UI/UX Designer', image: member3 },
+    { name: 'Abir Kundu', role: 'Project Manager', image: member1 },
+    { name: 'Mizanur Rahman Tazim', role: 'Frontend Developer', image: member2 },
+    { name: 'MT Ekleel, role: 'UI/UX Designer', image: member3 },
   ];
 
   return (
