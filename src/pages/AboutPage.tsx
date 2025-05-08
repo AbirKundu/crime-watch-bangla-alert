@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, Shield, Users, Lock } from 'lucide-react';
-import TeamMember from '@/components/TeamMember';
+import Team from '@/components/Team';
 
 // Define the team members array that can be easily updated
 const teamMembers = [
@@ -115,16 +114,7 @@ const AboutPage = () => {
 
       <div className="mb-14">
         <h2 className="text-2xl font-semibold mb-6">Our Team</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {teamMembers.map((member, index) => (
-            <TeamMember 
-              key={index}
-              name={member.name}
-              role={member.role}
-              image={member.image}
-            />
-          ))}
-        </div>
+        <Team />
       </div>
 
       <div>

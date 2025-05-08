@@ -1,3 +1,4 @@
+
 import React from 'react';
 import TeamMember from './TeamMember';
 
@@ -10,7 +11,7 @@ const Team = () => {
   const teamMembers = [
     { name: 'Abir Kundu', role: 'Project Manager', image: member1 },
     { name: 'Mizanur Rahman Tazim', role: 'Frontend Developer', image: member2 },
-    { name: 'MT Ekleel, role: 'UI/UX Designer', image: member3 },
+    { name: 'MT Ekleel', role: 'UI/UX Designer', image: member3 },
   ];
 
   return (
