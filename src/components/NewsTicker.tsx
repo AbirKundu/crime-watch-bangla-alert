@@ -1,14 +1,18 @@
-
 import React from 'react';
 import { AlertTriangle } from 'lucide-react';
 
+// Import crime pictures
+import crimePic1 from '@/components/picture/crimePic1.jpg';
+import crimePic2 from '@/components/picture/crimePic2.jpg';
+import crimePic3 from '@/components/picture/crimePic3.jpg';
+
 // Sample news alerts - in a real app, these would come from an API
 const newsAlerts = [
-  { id: 1, text: "BREAKING: Robbery reported in Gulshan-2 area at 2:30 PM" },
-  { id: 2, text: "ALERT: Suspicious activity near Dhanmondi Lake" },
-  { id: 3, text: "Police conducting special operation in Uttara Sector 7" },
-  { id: 4, text: "Two arrested in connection with Mirpur phone snatching incidents" },
-  { id: 5, text: "Warning: Increased reports of fraud in Banani residential area" },
+  { id: 1, text: "BREAKING: Robbery reported in Gulshan-2 area at 2:30 PM", image: crimePic1 },
+  { id: 2, text: "ALERT: Suspicious activity near Dhanmondi Lake", image: crimePic2 },
+  { id: 3, text: "Police conducting special operation in Uttara Sector 7", image: crimePic3 },
+  { id: 4, text: "Two arrested in connection with Mirpur phone snatching incidents", image: crimePic1 },
+  { id: 5, text: "Warning: Increased reports of fraud in Banani residential area", image: crimePic2 },
 ];
 
 const NewsTicker = () => {

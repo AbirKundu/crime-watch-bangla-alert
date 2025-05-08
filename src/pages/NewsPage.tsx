@@ -7,6 +7,11 @@ import { Badge } from '@/components/ui/badge';
 
 import CrimeCard, { CrimeIncident } from '@/components/CrimeCard';
 
+// Import crime pictures
+import crimePic1 from '@/components/picture/crimePic1.jpg';
+import crimePic2 from '@/components/picture/crimePic2.jpg';
+import crimePic3 from '@/components/picture/crimePic3.jpg';
+
 // Sample news data
 const allIncidents: CrimeIncident[] = [
   {
@@ -17,7 +22,7 @@ const allIncidents: CrimeIncident[] = [
     type: "Robbery",
     description: "Two armed individuals robbed a convenience store. Police are investigating. No injuries reported.",
     severity: "high",
-    imageUrl: "https://images.unsplash.com/photo-1617839647662-8b478d2df9c1?ixlib=rb-4.0.3&q=85&w=1920&h=1080&crop=entropy&cs=srgb"
+    imageUrl: crimePic1
   },
   {
     id: 2,
@@ -27,7 +32,7 @@ const allIncidents: CrimeIncident[] = [
     type: "Theft",
     description: "Multiple vehicles reported broken into with valuables stolen from inside.",
     severity: "medium",
-    imageUrl: "https://images.unsplash.com/photo-1607250149983-5b88a5d54ac6?ixlib=rb-4.0.3&q=85&w=1920&h=1080&crop=entropy&cs=srgb"
+    imageUrl: crimePic2
   },
   {
     id: 3,
@@ -37,7 +42,7 @@ const allIncidents: CrimeIncident[] = [
     type: "Suspicious",
     description: "Residents reported suspicious individuals surveilling residences in the area.",
     severity: "low",
-    imageUrl: "https://images.unsplash.com/photo-1494891848038-7bd202a2afeb?q=80&w=1920&h=1080&crop=entropy&cs=tinysrgb"
+    imageUrl: crimePic3
   },
   {
     id: 4,
@@ -47,7 +52,7 @@ const allIncidents: CrimeIncident[] = [
     type: "Theft",
     description: "A person's phone was snatched while they were walking. Suspects fled on a motorcycle.",
     severity: "medium",
-    imageUrl: "https://images.unsplash.com/photo-1589578527966-fdac0f44566c?q=80&w=1920&h=1080&crop=entropy&cs=tinysrgb"
+    imageUrl: crimePic1
   },
   {
     id: 5,
@@ -57,7 +62,7 @@ const allIncidents: CrimeIncident[] = [
     type: "Burglary",
     description: "A residence was broken into while occupants were sleeping. Electronics and jewelry stolen.",
     severity: "high",
-    imageUrl: "https://images.unsplash.com/photo-1527576539890-dfa815648363?q=80&w=1920&h=1080&crop=entropy&cs=tinysrgb"
+    imageUrl: crimePic2
   },
   {
     id: 6,
@@ -67,7 +72,7 @@ const allIncidents: CrimeIncident[] = [
     type: "Fraud",
     description: "Multiple residents reporting unauthorized transactions. Local bank investigating.",
     severity: "medium",
-    imageUrl: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?q=80&w=1920&h=1080&crop=entropy&cs=tinysrgb"
+    imageUrl: crimePic3
   },
 ];
 
@@ -81,7 +86,7 @@ const governmentUpdates: CrimeIncident[] = [
     type: "Police",
     description: "Due to recent incidents, police have increased patrol frequency in Gulshan residential areas.",
     severity: "low",
-    imageUrl: "https://images.unsplash.com/photo-1525727803-9558be27be37?q=80&w=1920&h=1080&crop=entropy&cs=tinysrgb"
+    imageUrl: crimePic2
   },
   {
     id: 102,
@@ -91,7 +96,7 @@ const governmentUpdates: CrimeIncident[] = [
     type: "Traffic",
     description: "Authorities announce new traffic control measures to reduce congestion and improve safety.",
     severity: "low",
-    imageUrl: "https://images.unsplash.com/photo-1621252179027-9a4faa3f430d?q=80&w=1920&h=1080&crop=entropy&cs=tinysrgb"
+    imageUrl: crimePic3
   },
   {
     id: 103,
@@ -101,7 +106,7 @@ const governmentUpdates: CrimeIncident[] = [
     type: "Government",
     description: "Government launches new initiative to combat corruption in public services.",
     severity: "medium",
-    imageUrl: "https://images.unsplash.com/photo-1466442929976-97f336a657be?q=80&w=1920&h=1080&crop=entropy&cs=tinysrgb"
+    imageUrl: crimePic1
   },
 ];
 
