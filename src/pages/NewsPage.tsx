@@ -7,10 +7,10 @@ import { Badge } from '@/components/ui/badge';
 
 import CrimeCard, { CrimeIncident } from '@/components/CrimeCard';
 
-// Import crime pictures
-import crimePic1 from '@/components/picture/crimePic1.jpg';
-import crimePic2 from '@/components/picture/crimePic2.jpg';
-import crimePic3 from '@/components/picture/crimePic3.jpg';
+// Using placeholder images from Unsplash
+const crimePic1 = "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80";
+const crimePic2 = "https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=800&q=80";
+const crimePic3 = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80";
 
 // Sample news data
 const allIncidents: CrimeIncident[] = [
