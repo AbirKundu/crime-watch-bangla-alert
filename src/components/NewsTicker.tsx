@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { AlertTriangle } from 'lucide-react';
 
 // Using local image imports
-import crimePic1 from './picture/crimePic1.jpg';
+import crimePic1 from './picture/crimePic1.jpeg';
 import crimePic2 from './picture/crimePic2.jpg';
 import crimePic3 from './picture/crimePic3.jpg';
 import crimePic4 from './picture/crimePic4.jpg';
