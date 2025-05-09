@@ -11,6 +11,9 @@ import CrimeCard, { CrimeIncident } from '@/components/CrimeCard';
 const crimePic1 = "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80";
 const crimePic2 = "https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=800&q=80";
 const crimePic3 = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80";
+const crimePic4 = "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80";
+const crimePic5 = "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80";
+const crimePic6 = "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?auto=format&fit=crop&w=800&q=80";
 
 // Sample news data
 const allIncidents: CrimeIncident[] = [
@@ -52,7 +55,7 @@ const allIncidents: CrimeIncident[] = [
     type: "Theft",
     description: "A person's phone was snatched while they were walking. Suspects fled on a motorcycle.",
     severity: "medium",
-    imageUrl: crimePic1
+    imageUrl: crimePic4
   },
   {
     id: 5,
@@ -62,7 +65,7 @@ const allIncidents: CrimeIncident[] = [
     type: "Burglary",
     description: "A residence was broken into while occupants were sleeping. Electronics and jewelry stolen.",
     severity: "high",
-    imageUrl: crimePic2
+    imageUrl: crimePic5
   },
   {
     id: 6,
@@ -72,7 +75,7 @@ const allIncidents: CrimeIncident[] = [
     type: "Fraud",
     description: "Multiple residents reporting unauthorized transactions. Local bank investigating.",
     severity: "medium",
-    imageUrl: crimePic3
+    imageUrl: crimePic6
   },
 ];
 
@@ -107,6 +110,36 @@ const governmentUpdates: CrimeIncident[] = [
     description: "Government launches new initiative to combat corruption in public services.",
     severity: "medium",
     imageUrl: crimePic1
+  },
+  {
+    id: 104,
+    title: "Cybersecurity Advisory Issued",
+    location: "Nationwide",
+    time: "4 days ago, 10:15 AM",
+    type: "Security",
+    description: "Government issues advisory on protecting personal data from increasing cyber threats.",
+    severity: "medium",
+    imageUrl: crimePic4
+  },
+  {
+    id: 105,
+    title: "Emergency Response Training Program",
+    location: "Dhaka Metropolitan",
+    time: "1 week ago, 9:30 AM",
+    type: "Training",
+    description: "New program launched to train civilians on emergency response procedures.",
+    severity: "low",
+    imageUrl: crimePic5
+  },
+  {
+    id: 106,
+    title: "Public Safety Infrastructure Upgrade",
+    location: "Dhaka City",
+    time: "1 week ago, 3:45 PM",
+    type: "Infrastructure",
+    description: "City authorities announce plans to install additional CCTV cameras and emergency call boxes.",
+    severity: "low",
+    imageUrl: crimePic6
   },
 ];
 
@@ -152,8 +185,8 @@ const NewsPage = () => {
           </TabsList>
           
           <div className="flex gap-2">
-            <Badge variant="outline" className="bg-background/50">Today: 2</Badge>
-            <Badge variant="outline" className="bg-background/50">This Week: 6</Badge>
+            <Badge variant="outline" className="bg-background/50">Today: 3</Badge>
+            <Badge variant="outline" className="bg-background/50">This Week: 12</Badge>
           </div>
         </div>
         
