@@ -2,13 +2,13 @@
 import React, { useEffect, useRef } from 'react';
 import { AlertTriangle } from 'lucide-react';
 
-// Using placeholder images from Unsplash
-const crimePic1 = "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80";
-const crimePic2 = "https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=800&q=80";
-const crimePic3 = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80";
-const crimePic4 = "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80";
-const crimePic5 = "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80";
-const crimePic6 = "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?auto=format&fit=crop&w=800&q=80";
+// Using local image imports
+import crimePic1 from './picture/crimePic1.jpg';
+import crimePic2 from './picture/crimePic2.jpg';
+import crimePic3 from './picture/crimePic3.jpg';
+import crimePic4 from './picture/crimePic4.jpg';
+import crimePic5 from './picture/crimePic5.jpg';
+import crimePic6 from './picture/crimePic6.jpg';
 
 // Sample news alerts - in a real app, these would come from an API
 const newsAlerts = [
