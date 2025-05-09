@@ -48,7 +48,8 @@ const NewsTicker = () => {
 
   return (
     <div className="bg-primary/90 text-white py-2 overflow-hidden whitespace-nowrap w-full relative">
-      <style jsx>{`
+      <style>
+        {`
         @keyframes ticker {
           0% { transform: translateX(100%); }
           100% { transform: translateX(-100%); }
@@ -57,7 +58,8 @@ const NewsTicker = () => {
           animation: ticker 30s linear infinite;
           display: inline-block;
         }
-      `}</style>
+        `}
+      </style>
       <div className="flex">
         <div className="flex-shrink-0 px-3 flex items-center border-r border-white/40">
           <AlertTriangle className="h-4 w-4 mr-2" />
