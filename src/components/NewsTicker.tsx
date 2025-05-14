@@ -1,27 +1,18 @@
 
 import React, { useEffect, useRef } from 'react';
 import { AlertTriangle } from 'lucide-react';
-
-// Using local image imports
-import crimePic1 from './picture/crimePic1.jpeg';
-import crimePic2 from './picture/crimePic2.jpg';
-import crimePic3 from './picture/crimePic3.jpg';
-import crimePic4 from './picture/crimePic4.jpg';
-import crimePic5 from './picture/crimePic5.jpg';
-import crimePic6 from './picture/crimePic6.jpg';
-
-// Sample news alerts - in a real app, these would come from an API
-const newsAlerts = [
-  { id: 1, text: "BREAKING: Robbery reported in Gulshan-2 area at 2:30 PM", image: crimePic1 },
-  { id: 2, text: "ALERT: Suspicious activity near Dhanmondi Lake", image: crimePic2 },
-  { id: 3, text: "Police conducting special operation in Uttara Sector 7", image: crimePic3 },
-  { id: 4, text: "Two arrested in connection with Mirpur phone snatching incidents", image: crimePic4 },
-  { id: 5, text: "Warning: Increased reports of fraud in Banani residential area", image: crimePic5 },
-  { id: 6, text: "Special police checkpoint established at Mohakhali intersection", image: crimePic6 },
-];
+import { useUser } from '@/context/UserContext';
 
 const NewsTicker = () => {
   const tickerRef = useRef<HTMLDivElement>(null);
+  const { allReports } = useUser();
+
+  // Prepare news alerts from both user reports and official alerts
+  const newsAlerts = allReports.map(report => ({
+    id: report.id,
+    text: `${report.isUserReport ? "USER REPORT" : "ALERT"}: ${report.title} in ${report.location} - ${report.time}`,
+    image: report.imageUrl
+  }));
 
   useEffect(() => {
     const tickerElement = tickerRef.current;

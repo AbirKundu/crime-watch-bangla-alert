@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Home, Map, AlertTriangle, MessageCircle, Info, Contact } from 'lucide-react';
+import { Home, Map, AlertTriangle, MessageCircle, Info, Contact, LogIn, UserPlus } from 'lucide-react';
 
 const NavBar = () => {
   return (
@@ -34,24 +34,33 @@ const NavBar = () => {
           </NavLink>
         </div>
         
-        <div className="md:hidden">
-          <Button variant="ghost" size="icon">
-            <span className="sr-only">Toggle menu</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </Button>
+        <div className="flex items-center gap-2">
+          <NavLink to="/login" icon={<LogIn className="h-4 w-4 mr-1" />}>
+            Login
+          </NavLink>
+          <NavLink to="/register" icon={<UserPlus className="h-4 w-4 mr-1" />} className="hidden sm:flex">
+            Register
+          </NavLink>
+          
+          <div className="md:hidden">
+            <Button variant="ghost" size="icon">
+              <span className="sr-only">Toggle menu</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            </Button>
+          </div>
         </div>
       </div>
     </nav>
@@ -59,10 +68,10 @@ const NavBar = () => {
 };
 
 // Helper component for nav links
-const NavLink = ({ to, icon, children }: { to: string; icon?: React.ReactNode; children: React.ReactNode }) => {
+const NavLink = ({ to, icon, children, className = "" }: { to: string; icon?: React.ReactNode; children: React.ReactNode; className?: string }) => {
   return (
     <Link to={to}>
-      <Button variant="ghost" size="sm" className="flex items-center">
+      <Button variant="ghost" size="sm" className={`flex items-center ${className}`}>
         {icon}
         {children}
       </Button>

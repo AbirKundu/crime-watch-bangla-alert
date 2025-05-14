@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,19 +9,71 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/use-toast';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '@/context/UserContext';
 
 const ReportPage = () => {
   const { toast } = useToast();
-
+  const navigate = useNavigate();
+  const { addReport, isAuthenticated } = useUser();
+  
+  const [title, setTitle] = useState('');
+  const [incidentType, setIncidentType] = useState('');
+  const [location, setLocation] = useState('');
+  const [description, setDescription] = useState('');
+  const [useCurrentLocation, setUseCurrentLocation] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(false);
+  
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    
+    if (!isAuthenticated) {
+      toast({
+        title: "Login Required",
+        description: "You need to login to submit a report. Redirecting to login page...",
+      });
+      
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+      
+      return;
+    }
+    
+    // Determine severity based on incident type
+    let severity: "low" | "medium" | "high" = "medium";
+    if (["robbery", "assault", "violence"].includes(incidentType.toLowerCase())) {
+      severity = "high";
+    } else if (["suspicious", "vandalism"].includes(incidentType.toLowerCase())) {
+      severity = "low";
+    }
+    
+    // Add the report to our context
+    addReport({
+      title,
+      location: useCurrentLocation ? "Current Location (Dhaka)" : location,
+      type: incidentType,
+      description,
+      severity,
+    });
     
     toast({
       title: "Report Submitted",
       description: "Thank you for your report. Authorities have been notified.",
     });
     
-    // In a real app, this would send the data to an API endpoint
+    // Clear the form
+    setTitle('');
+    setIncidentType('');
+    setLocation('');
+    setDescription('');
+    setUseCurrentLocation(false);
+    setIsAnonymous(false);
+    
+    // Redirect to news page to see the report
+    setTimeout(() => {
+      navigate('/news');
+    }, 2000);
   };
 
   return (
@@ -40,10 +92,25 @@ const ReportPage = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Report Title</Label>
+                  <Input 
+                    id="title" 
+                    placeholder="Brief title describing the incident" 
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    required 
+                  />
+                </div>
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="incident-type">Incident Type</Label>
-                    <Select required>
+                    <Select 
+                      value={incidentType}
+                      onValueChange={setIncidentType}
+                      required
+                    >
                       <SelectTrigger id="incident-type">
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
@@ -61,7 +128,14 @@ const ReportPage = () => {
                   
                   <div className="space-y-2">
                     <Label htmlFor="location">Location</Label>
-                    <Input id="location" placeholder="Address or area" required />
+                    <Input 
+                      id="location" 
+                      placeholder="Address or area" 
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      disabled={useCurrentLocation}
+                      required={!useCurrentLocation} 
+                    />
                   </div>
                   
                   <div className="space-y-2">
@@ -81,6 +155,8 @@ const ReportPage = () => {
                     id="description" 
                     placeholder="Describe what happened in detail..." 
                     rows={5}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                     required
                   />
                 </div>
@@ -91,12 +167,20 @@ const ReportPage = () => {
                 </div>
                 
                 <div className="flex items-center space-x-4">
-                  <Switch id="use-location" />
+                  <Switch 
+                    id="use-location" 
+                    checked={useCurrentLocation}
+                    onCheckedChange={setUseCurrentLocation}
+                  />
                   <Label htmlFor="use-location">Use my current location</Label>
                 </div>
                 
                 <div className="flex items-center space-x-4">
-                  <Switch id="anonymous" />
+                  <Switch 
+                    id="anonymous"
+                    checked={isAnonymous}
+                    onCheckedChange={setIsAnonymous}
+                  />
                   <Label htmlFor="anonymous">Submit anonymously</Label>
                 </div>
                 
