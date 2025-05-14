@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -47,7 +48,7 @@ const ReportPage = () => {
       severity = "low";
     }
     
-    // Add the report to our context
+    // Add the report to our context - now explicitly passing isUserReport as true
     addReport({
       title,
       location: useCurrentLocation ? "Current Location (Dhaka)" : location,
@@ -55,11 +56,13 @@ const ReportPage = () => {
       description,
       severity,
       reportedBy: isAnonymous ? 'Anonymous' : (user?.name || 'User'),
+      // Note: isUserReport is now handled internally in the addReport function
     });
     
     toast({
       title: "Report Submitted",
-      description: "Thank you for your report. Authorities have been notified.",
+      description: "Thank you for your report. It will appear in the live alerts section and news page.",
+      variant: "default",
     });
     
     // Clear the form

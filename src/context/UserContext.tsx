@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Import local images
@@ -31,7 +30,7 @@ type UserContextType = {
   logout: () => void;
   register: (name: string, email: string, password: string) => Promise<void>;
   userReports: UserReport[];
-  addReport: (report: Omit<UserReport, 'id' | 'time' | 'isUserReport'>) => void;
+  addReport: (report: Omit<UserReport, 'id' | 'time'>) => void;
   allReports: UserReport[];
   user: User | null;
 };
@@ -178,12 +177,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
   };
 
-  const addReport = (report: Omit<UserReport, 'id' | 'time' | 'isUserReport'>) => {
+  const addReport = (report: Omit<UserReport, 'id' | 'time'>) => {
     const newReport: UserReport = {
       ...report,
       id: Date.now(), // Generate a unique ID
       time: "Just now", // Current time
-      isUserReport: true,
+      isUserReport: true, // Always mark as user report
     };
     
     setUserReports(prevReports => [newReport, ...prevReports]);

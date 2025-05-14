@@ -63,8 +63,11 @@ const NewsTicker = () => {
             {newsAlerts.map((alert, index) => (
               <React.Fragment key={alert.id}>
                 <span 
-                  className={`mx-4 ${alert.isUserReport ? 'bg-destructive/20 px-2 py-1 rounded font-medium' : ''} 
-                  ${alert.severity === 'high' ? 'text-destructive font-bold' : ''}`}
+                  className={`mx-4 ${
+                    alert.isUserReport 
+                      ? 'bg-yellow-500/80 text-white px-2 py-1 rounded font-medium' 
+                      : 'text-white bg-destructive/80 px-2 py-1 rounded font-medium'
+                  }`}
                 >
                   {alert.text}
                 </span>
