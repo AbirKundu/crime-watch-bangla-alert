@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, EyeOff, Facebook, Mail } from 'lucide-react';
+import { Eye, EyeOff, Facebook } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { useUser } from '@/context/UserContext';
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -15,15 +15,28 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { login } = useUser();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, authenticate with backend
-    toast({
-      title: "Login Successful",
-      description: "Welcome back to CrimeWatch Bangladesh!",
-    });
-    navigate('/');
+    
+    try {
+      // Use the login function from UserContext
+      await login(email, password);
+      
+      toast({
+        title: "Login Successful",
+        description: "Welcome back to CrimeWatch Bangladesh!",
+      });
+      
+      navigate('/');
+    } catch (error) {
+      toast({
+        title: "Login Failed",
+        description: "Invalid email or password. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSocialLogin = (provider: string) => {

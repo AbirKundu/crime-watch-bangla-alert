@@ -2,9 +2,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Home, Map, AlertTriangle, MessageCircle, Info, Contact, LogIn, UserPlus } from 'lucide-react';
+import { Home, Map, AlertTriangle, MessageCircle, Info, Contact, LogIn, UserPlus, LogOut, User } from 'lucide-react';
+import { useUser } from '@/context/UserContext';
 
 const NavBar = () => {
+  const { isAuthenticated, logout } = useUser();
+
   return (
     <nav className="bg-secondary border-b border-border/40 sticky top-0 w-full z-50 shadow-md">
       <div className="container flex justify-between items-center py-2">
@@ -35,12 +38,31 @@ const NavBar = () => {
         </div>
         
         <div className="flex items-center gap-2">
-          <NavLink to="/login" icon={<LogIn className="h-4 w-4 mr-1" />}>
-            Login
-          </NavLink>
-          <NavLink to="/register" icon={<UserPlus className="h-4 w-4 mr-1" />} className="hidden sm:flex">
-            Register
-          </NavLink>
+          {isAuthenticated ? (
+            <>
+              <NavLink to="/profile" icon={<User className="h-4 w-4 mr-1" />} className="hidden sm:flex">
+                My Profile
+              </NavLink>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-1"
+                onClick={logout}
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </Button>
+            </>
+          ) : (
+            <>
+              <NavLink to="/login" icon={<LogIn className="h-4 w-4 mr-1" />}>
+                Login
+              </NavLink>
+              <NavLink to="/register" icon={<UserPlus className="h-4 w-4 mr-1" />} className="hidden sm:flex">
+                Register
+              </NavLink>
+            </>
+          )}
           
           <div className="md:hidden">
             <Button variant="ghost" size="icon">

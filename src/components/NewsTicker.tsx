@@ -11,7 +11,9 @@ const NewsTicker = () => {
   const newsAlerts = allReports.map(report => ({
     id: report.id,
     text: `${report.isUserReport ? "USER REPORT" : "ALERT"}: ${report.title} in ${report.location} - ${report.time}`,
-    image: report.imageUrl
+    image: report.imageUrl,
+    isUserReport: report.isUserReport,
+    severity: report.severity
   }));
 
   useEffect(() => {
@@ -60,7 +62,12 @@ const NewsTicker = () => {
           <div ref={tickerRef} className="news-ticker inline-block">
             {newsAlerts.map((alert, index) => (
               <React.Fragment key={alert.id}>
-                <span className="mx-4">{alert.text}</span>
+                <span 
+                  className={`mx-4 ${alert.isUserReport ? 'bg-destructive/20 px-2 py-1 rounded font-medium' : ''} 
+                  ${alert.severity === 'high' ? 'text-destructive font-bold' : ''}`}
+                >
+                  {alert.text}
+                </span>
                 {index < newsAlerts.length - 1 && (
                   <span className="text-primary-foreground/70 mx-2">•</span>
                 )}
