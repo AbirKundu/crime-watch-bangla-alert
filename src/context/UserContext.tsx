@@ -17,6 +17,12 @@ export type UserReport = {
   severity: "low" | "medium" | "high";
   imageUrl?: string;
   isUserReport?: boolean;
+  reportedBy?: string;
+};
+
+type User = {
+  name: string;
+  email: string;
 };
 
 type UserContextType = {
@@ -27,6 +33,7 @@ type UserContextType = {
   userReports: UserReport[];
   addReport: (report: Omit<UserReport, 'id' | 'time' | 'isUserReport'>) => void;
   allReports: UserReport[];
+  user: User | null;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -94,6 +101,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [userReports, setUserReports] = useState<UserReport[]>(initialUserReports);
   const [officialReports] = useState<UserReport[]>(initialOfficialReports);
+  const [user, setUser] = useState<User | null>(null);
 
   // Combine both types of reports for an all-inclusive list
   const allReports = [...userReports, ...officialReports];
@@ -103,8 +111,15 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const checkAuthStatus = () => {
       // In a real app, check token validity, etc.
       const token = localStorage.getItem('authToken');
-      if (token) {
+      const storedName = localStorage.getItem('userName');
+      const storedEmail = localStorage.getItem('userEmail');
+      
+      if (token && storedName && storedEmail) {
         setIsAuthenticated(true);
+        setUser({
+          name: storedName,
+          email: storedEmail,
+        });
       }
     };
     
@@ -119,6 +134,14 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (email && password) {
       // Store auth token (in a real app, this would come from the server)
       localStorage.setItem('authToken', 'demo-token');
+      localStorage.setItem('userEmail', email);
+      localStorage.setItem('userName', email.split('@')[0]);
+      
+      setUser({
+        name: email.split('@')[0],
+        email: email
+      });
+      
       setIsAuthenticated(true);
     } else {
       throw new Error('Invalid credentials');
@@ -133,6 +156,14 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (name && email && password) {
       // Store auth token (in a real app, this would come from the server)
       localStorage.setItem('authToken', 'demo-token');
+      localStorage.setItem('userName', name);
+      localStorage.setItem('userEmail', email);
+      
+      setUser({
+        name: name,
+        email: email
+      });
+      
       setIsAuthenticated(true);
     } else {
       throw new Error('Invalid registration information');
@@ -141,7 +172,10 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userEmail');
     setIsAuthenticated(false);
+    setUser(null);
   };
 
   const addReport = (report: Omit<UserReport, 'id' | 'time' | 'isUserReport'>) => {
@@ -164,6 +198,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       userReports,
       addReport,
       allReports,
+      user,
     }}>
       {children}
     </UserContext.Provider>

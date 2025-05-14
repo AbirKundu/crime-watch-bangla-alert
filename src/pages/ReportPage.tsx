@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -55,7 +54,6 @@ const ReportPage = () => {
       type: incidentType,
       description,
       severity,
-      isUserReport: true,
       reportedBy: isAnonymous ? 'Anonymous' : (user?.name || 'User'),
     });
     
