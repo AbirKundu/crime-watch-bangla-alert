@@ -15,7 +15,7 @@ import { useUser } from '@/context/UserContext';
 const ReportPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { addReport, isAuthenticated } = useUser();
+  const { addReport, isAuthenticated, user } = useUser();
   
   const [title, setTitle] = useState('');
   const [incidentType, setIncidentType] = useState('');
@@ -55,6 +55,8 @@ const ReportPage = () => {
       type: incidentType,
       description,
       severity,
+      isUserReport: true,
+      reportedBy: isAnonymous ? 'Anonymous' : (user?.name || 'User'),
     });
     
     toast({
@@ -192,7 +194,7 @@ const ReportPage = () => {
           </Card>
         </div>
         
-        <div className="space-y-6">
+        <div className="space-y-6 order-first lg:order-last">
           <Card className="bg-primary text-primary-foreground">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">

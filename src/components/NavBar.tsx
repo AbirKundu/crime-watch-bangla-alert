@@ -1,12 +1,16 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Home, Map, AlertTriangle, MessageCircle, Info, Contact, LogIn, UserPlus, LogOut, User } from 'lucide-react';
+import { Home, Map, AlertTriangle, MessageCircle, Info, Contact, LogIn, UserPlus, LogOut, User, Menu, X, Sun, Moon } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
+import { useTheme } from '@/context/ThemeContext';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 const NavBar = () => {
-  const { isAuthenticated, logout } = useUser();
+  const { isAuthenticated, logout, user } = useUser();
+  const { theme, toggleTheme } = useTheme();
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <nav className="bg-secondary border-b border-border/40 sticky top-0 w-full z-50 shadow-md">
@@ -38,15 +42,26 @@ const NavBar = () => {
         </div>
         
         <div className="flex items-center gap-2">
+          {/* Theme toggle button */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={toggleTheme}
+            className="text-foreground"
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
+          
           {isAuthenticated ? (
             <>
-              <NavLink to="/profile" icon={<User className="h-4 w-4 mr-1" />} className="hidden sm:flex">
-                My Profile
-              </NavLink>
+              <div className="hidden sm:flex items-center mr-2 text-sm">
+                <span>Hello, {user?.name || 'User'}</span>
+              </div>
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="flex items-center gap-1"
+                className="hidden sm:flex items-center gap-1"
                 onClick={logout}
               >
                 <LogOut className="h-4 w-4" />
@@ -55,7 +70,7 @@ const NavBar = () => {
             </>
           ) : (
             <>
-              <NavLink to="/login" icon={<LogIn className="h-4 w-4 mr-1" />}>
+              <NavLink to="/login" icon={<LogIn className="h-4 w-4 mr-1" />} className="hidden sm:flex">
                 Login
               </NavLink>
               <NavLink to="/register" icon={<UserPlus className="h-4 w-4 mr-1" />} className="hidden sm:flex">
@@ -64,25 +79,90 @@ const NavBar = () => {
             </>
           )}
           
-          <div className="md:hidden">
-            <Button variant="ghost" size="icon">
-              <span className="sr-only">Toggle menu</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </Button>
-          </div>
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden">
+                <span className="sr-only">Toggle menu</span>
+                <Menu className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[80%] sm:w-[350px]">
+              <div className="flex flex-col h-full py-4">
+                <div className="mb-8">
+                  <div className="flex items-center gap-2 mb-6">
+                    <AlertTriangle className="h-6 w-6 text-primary" />
+                    <span className="font-bold text-xl">CrimeWatch</span>
+                  </div>
+                  
+                  {isAuthenticated ? (
+                    <div className="border-b border-border pb-4 mb-4">
+                      <div className="text-sm mb-2">Hello, {user?.name || 'User'}</div>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full justify-start"
+                        onClick={() => {
+                          logout();
+                          setIsOpen(false);
+                        }}
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Logout
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="border-b border-border pb-4 mb-4 flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1"
+                        asChild
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <Link to="/login">
+                          <LogIn className="h-4 w-4 mr-2" />
+                          Login
+                        </Link>
+                      </Button>
+                      <Button 
+                        variant="default" 
+                        size="sm" 
+                        className="flex-1"
+                        asChild
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <Link to="/register">
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Register
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="space-y-1">
+                  <MobileNavLink to="/" icon={<Home className="h-5 w-5 mr-3" />} setIsOpen={setIsOpen}>
+                    Home
+                  </MobileNavLink>
+                  <MobileNavLink to="/map" icon={<Map className="h-5 w-5 mr-3" />} setIsOpen={setIsOpen}>
+                    Live Map
+                  </MobileNavLink>
+                  <MobileNavLink to="/report" icon={<AlertTriangle className="h-5 w-5 mr-3" />} setIsOpen={setIsOpen}>
+                    Report
+                  </MobileNavLink>
+                  <MobileNavLink to="/news" icon={<MessageCircle className="h-5 w-5 mr-3" />} setIsOpen={setIsOpen}>
+                    News
+                  </MobileNavLink>
+                  <MobileNavLink to="/about" icon={<Info className="h-5 w-5 mr-3" />} setIsOpen={setIsOpen}>
+                    About
+                  </MobileNavLink>
+                  <MobileNavLink to="/contact" icon={<Contact className="h-5 w-5 mr-3" />} setIsOpen={setIsOpen}>
+                    Contact
+                  </MobileNavLink>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </nav>
@@ -94,6 +174,28 @@ const NavLink = ({ to, icon, children, className = "" }: { to: string; icon?: Re
   return (
     <Link to={to}>
       <Button variant="ghost" size="sm" className={`flex items-center ${className}`}>
+        {icon}
+        {children}
+      </Button>
+    </Link>
+  );
+};
+
+// Mobile navigation link component
+const MobileNavLink = ({ 
+  to, 
+  icon, 
+  children, 
+  setIsOpen 
+}: { 
+  to: string; 
+  icon?: React.ReactNode; 
+  children: React.ReactNode;
+  setIsOpen: (open: boolean) => void;
+}) => {
+  return (
+    <Link to={to} onClick={() => setIsOpen(false)}>
+      <Button variant="ghost" size="lg" className="w-full justify-start">
         {icon}
         {children}
       </Button>
