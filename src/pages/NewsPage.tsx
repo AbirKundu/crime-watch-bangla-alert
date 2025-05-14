@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { MessageCircle, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -7,17 +8,17 @@ import { Badge } from '@/components/ui/badge';
 import CrimeCard, { CrimeIncident } from '@/components/CrimeCard';
 import { useUser, UserReport } from '@/context/UserContext';
 
+// Move image imports to the top level of the file
+import crimePic1 from '../components/picture/crimePic1.jpg';
+import crimePic2 from '../components/picture/crimePic2.jpg';
+import crimePic3 from '../components/picture/crimePic3.jpg';
+import crimePic4 from '../components/picture/crimePic4.jpg';
+import crimePic5 from '../components/picture/crimePic5.jpg';
+import crimePic6 from '../components/picture/crimePic6.jpg';
+
 const NewsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const { userReports } = useUser();
-
-  // Using local image imports
-  import crimePic1 from '../components/picture/crimePic1.jpg';
-  import crimePic2 from '../components/picture/crimePic2.jpg';
-  import crimePic3 from '../components/picture/crimePic3.jpg';
-  import crimePic4 from '../components/picture/crimePic4.jpg';
-  import crimePic5 from '../components/picture/crimePic5.jpg';
-  import crimePic6 from '../components/picture/crimePic6.jpg';
 
   // Sample news data
   const allIncidents: CrimeIncident[] = [
