@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -207,6 +206,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     
     try {
+      // Use the current origin to ensure proper redirect
       const redirectUrl = `${window.location.origin}/`;
       
       const { data, error } = await supabase.auth.signUp({
@@ -226,6 +226,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       console.log('Registration successful:', data.user?.email);
+      console.log('Email redirect URL set to:', redirectUrl);
       // The onAuthStateChange listener will handle the state updates
     } catch (error) {
       setLoading(false);
