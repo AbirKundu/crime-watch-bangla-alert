@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Eye, EyeOff, Facebook } from 'lucide-react';
+import { Eye, EyeOff, Facebook, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useUser } from '@/context/UserContext';
 
@@ -13,15 +13,33 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { login } = useUser();
+  const { login, isAuthenticated, loading: authLoading } = useUser();
+
+  // Redirect if already authenticated
+  React.useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      navigate('/');
+    }
+  }, [isAuthenticated, authLoading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!email || !password) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter both email and password.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    
     try {
-      // Use the login function from UserContext
       await login(email, password);
       
       toast({
@@ -30,22 +48,43 @@ const LoginPage = () => {
       });
       
       navigate('/');
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Login failed:', error);
+      
+      let errorMessage = "Please check your credentials and try again.";
+      
+      if (error.message?.includes('Invalid login credentials')) {
+        errorMessage = "Invalid email or password. Please check your credentials.";
+      } else if (error.message?.includes('Email not confirmed')) {
+        errorMessage = "Please check your email and click the confirmation link before signing in.";
+      } else if (error.message?.includes('Too many requests')) {
+        errorMessage = "Too many login attempts. Please wait a moment before trying again.";
+      }
+      
       toast({
         title: "Login Failed",
-        description: "Invalid email or password. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSocialLogin = (provider: string) => {
-    // In a real app, authenticate with social provider
     toast({
-      title: `${provider} Login Initiated`,
-      description: `Authenticating with ${provider}...`,
+      title: `${provider} Login`,
+      description: "Social login will be available soon.",
     });
   };
+
+  if (authLoading) {
+    return (
+      <div className="container flex items-center justify-center min-h-[80vh]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="container flex items-center justify-center min-h-[80vh] py-8 px-4 sm:px-6">
@@ -66,6 +105,7 @@ const LoginPage = () => {
                 placeholder="name@example.com" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
                 required 
               />
             </div>
@@ -83,6 +123,7 @@ const LoginPage = () => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
                   required 
                 />
                 <Button
@@ -91,12 +132,22 @@ const LoginPage = () => {
                   size="icon"
                   className="absolute right-0 top-0"
                   onClick={() => setShowPassword(!showPassword)}
+                  disabled={isLoading}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
               </div>
             </div>
-            <Button type="submit" className="w-full">Sign In</Button>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                'Sign In'
+              )}
+            </Button>
           </form>
 
           <div className="relative my-4">
@@ -114,6 +165,7 @@ const LoginPage = () => {
               type="button" 
               onClick={() => handleSocialLogin('Google')}
               className="w-full"
+              disabled={isLoading}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5 mr-2">
                 <path fill="#EA4335" d="M5.266 9.805C5.977 7.401 8.252 5.727 10.935 5.727c1.359 0 2.582.47 3.541 1.235l2.646-2.646C15.357 2.664 13.252 2 10.935 2 6.364 2 2.489 4.94 1 8.827L5.266 9.805z"/>
@@ -128,6 +180,7 @@ const LoginPage = () => {
               type="button" 
               onClick={() => handleSocialLogin('Facebook')}
               className="w-full"
+              disabled={isLoading}
             >
               <Facebook className="h-5 w-5 mr-2 text-blue-600" />
               Facebook

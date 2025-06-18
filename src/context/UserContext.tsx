@@ -1,4 +1,7 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 
 // Import local images
 import crimePic1 from '../components/picture/crimePic1.jpg';
@@ -19,20 +22,25 @@ export type UserReport = {
   reportedBy?: string;
 };
 
-type User = {
-  name: string;
-  email: string;
+type UserProfile = {
+  id: string;
+  full_name: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 type UserContextType = {
   isAuthenticated: boolean;
+  user: User | null;
+  profile: UserProfile | null;
+  session: Session | null;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
   register: (name: string, email: string, password: string) => Promise<void>;
+  logout: () => void;
   userReports: UserReport[];
   addReport: (report: Omit<UserReport, 'id' | 'time'>) => void;
   allReports: UserReport[];
-  user: User | null;
+  loading: boolean;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -97,84 +105,147 @@ const initialOfficialReports: UserReport[] = [
 ];
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [userReports, setUserReports] = useState<UserReport[]>(initialUserReports);
   const [officialReports] = useState<UserReport[]>(initialOfficialReports);
-  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // Combine both types of reports for an all-inclusive list
   const allReports = [...userReports, ...officialReports];
 
-  // Simulate checking if the user is logged in (could use localStorage in a real app)
+  // Set up auth state listener and check for existing session
   useEffect(() => {
-    const checkAuthStatus = () => {
-      // In a real app, check token validity, etc.
-      const token = localStorage.getItem('authToken');
-      const storedName = localStorage.getItem('userName');
-      const storedEmail = localStorage.getItem('userEmail');
-      
-      if (token && storedName && storedEmail) {
-        setIsAuthenticated(true);
-        setUser({
-          name: storedName,
-          email: storedEmail,
-        });
-      }
-    };
+    console.log('Setting up auth state listener');
     
-    checkAuthStatus();
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Fetch user profile when signed in
+          setTimeout(() => {
+            fetchUserProfile(session.user.id);
+          }, 0);
+        } else {
+          setProfile(null);
+        }
+        
+        setLoading(false);
+      }
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.email);
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      }
+      
+      setLoading(false);
+    });
+
+    return () => {
+      console.log('Cleaning up auth subscription');
+      subscription.unsubscribe();
+    };
   }, []);
 
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      console.log('Fetching profile for user:', userId);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return;
+      }
+
+      console.log('Profile fetched:', data);
+      setProfile(data);
+    } catch (error) {
+      console.error('Error in fetchUserProfile:', error);
+    }
+  };
+
   const login = async (email: string, password: string) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    console.log('Attempting login for:', email);
+    setLoading(true);
     
-    // In a real app, validate credentials with backend
-    if (email && password) {
-      // Store auth token (in a real app, this would come from the server)
-      localStorage.setItem('authToken', 'demo-token');
-      localStorage.setItem('userEmail', email);
-      localStorage.setItem('userName', email.split('@')[0]);
-      
-      setUser({
-        name: email.split('@')[0],
-        email: email
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
-      
-      setIsAuthenticated(true);
-    } else {
-      throw new Error('Invalid credentials');
+
+      if (error) {
+        console.error('Login error:', error);
+        throw error;
+      }
+
+      console.log('Login successful:', data.user?.email);
+      // The onAuthStateChange listener will handle the state updates
+    } catch (error) {
+      setLoading(false);
+      throw error;
     }
   };
 
   const register = async (name: string, email: string, password: string) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    console.log('Attempting registration for:', email);
+    setLoading(true);
     
-    // In a real app, register user with backend
-    if (name && email && password) {
-      // Store auth token (in a real app, this would come from the server)
-      localStorage.setItem('authToken', 'demo-token');
-      localStorage.setItem('userName', name);
-      localStorage.setItem('userEmail', email);
+    try {
+      const redirectUrl = `${window.location.origin}/`;
       
-      setUser({
-        name: name,
-        email: email
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            full_name: name,
+          },
+        },
       });
-      
-      setIsAuthenticated(true);
-    } else {
-      throw new Error('Invalid registration information');
+
+      if (error) {
+        console.error('Registration error:', error);
+        throw error;
+      }
+
+      console.log('Registration successful:', data.user?.email);
+      // The onAuthStateChange listener will handle the state updates
+    } catch (error) {
+      setLoading(false);
+      throw error;
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userEmail');
-    setIsAuthenticated(false);
-    setUser(null);
+  const logout = async () => {
+    console.log('Attempting logout');
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Logout error:', error);
+        throw error;
+      }
+      console.log('Logout successful');
+      // The onAuthStateChange listener will handle the state updates
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
   };
 
   const addReport = (report: Omit<UserReport, 'id' | 'time'>) => {
@@ -183,21 +254,27 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       id: Date.now(), // Generate a unique ID
       time: "Just now", // Current time
       isUserReport: true, // Always mark as user report
+      reportedBy: profile?.full_name || user?.email || 'Anonymous',
     };
     
     setUserReports(prevReports => [newReport, ...prevReports]);
   };
 
+  const isAuthenticated = !!user;
+
   return (
     <UserContext.Provider value={{
       isAuthenticated,
+      user,
+      profile,
+      session,
       login,
-      logout,
       register,
+      logout,
       userReports,
       addReport,
       allReports,
-      user,
+      loading,
     }}>
       {children}
     </UserContext.Provider>

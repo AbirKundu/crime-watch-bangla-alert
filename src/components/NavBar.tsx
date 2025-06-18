@@ -8,9 +8,20 @@ import { useTheme } from '@/context/ThemeContext';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 const NavBar = () => {
-  const { isAuthenticated, logout, user } = useUser();
+  const { isAuthenticated, logout, profile, user } = useUser();
   const { theme, toggleTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  };
+
+  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User';
 
   return (
     <nav className="bg-secondary border-b border-border/40 sticky top-0 w-full z-50 shadow-md">
@@ -33,7 +44,7 @@ const NavBar = () => {
           <NavLink to="/news" icon={<MessageCircle className="h-4 w-4 mr-1" />}>
             News
           </NavLink>
-          <NavLink to="/about" icon={<Info className="h-4 w-4 mr-1" />}>
+          <NavLink to="/about"icon={<Info className="h-4 w-4 mr-1" />}>
             About
           </NavLink>
           <NavLink to="/contact" icon={<Contact className="h-4 w-4 mr-1" />}>
@@ -56,13 +67,13 @@ const NavBar = () => {
           {isAuthenticated ? (
             <>
               <div className="hidden sm:flex items-center mr-2 text-sm">
-                <span>Hello, {user?.name || 'User'}</span>
+                <span>Hello, {displayName}</span>
               </div>
               <Button 
                 variant="outline" 
                 size="sm" 
                 className="hidden sm:flex items-center gap-1"
-                onClick={logout}
+                onClick={handleLogout}
               >
                 <LogOut className="h-4 w-4" />
                 Logout
@@ -96,15 +107,12 @@ const NavBar = () => {
                   
                   {isAuthenticated ? (
                     <div className="border-b border-border pb-4 mb-4">
-                      <div className="text-sm mb-2">Hello, {user?.name || 'User'}</div>
+                      <div className="text-sm mb-2">Hello, {displayName}</div>
                       <Button 
                         variant="outline" 
                         size="sm" 
                         className="w-full justify-start"
-                        onClick={() => {
-                          logout();
-                          setIsOpen(false);
-                        }}
+                        onClick={handleLogout}
                       >
                         <LogOut className="h-4 w-4 mr-2" />
                         Logout

@@ -5,35 +5,109 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Eye, EyeOff, Facebook } from 'lucide-react';
+import { Eye, EyeOff, Facebook, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useUser } from '@/context/UserContext';
 
 const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { register, isAuthenticated, loading: authLoading } = useUser();
 
-  const handleRegister = (e: React.FormEvent) => {
+  // Redirect if already authenticated
+  React.useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      navigate('/');
+    }
+  }, [isAuthenticated, authLoading, navigate]);
+
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, register with backend
-    toast({
-      title: "Registration Successful",
-      description: "Welcome to CrimeWatch Bangladesh!",
-    });
-    navigate('/');
+    
+    if (!name || !email || !password) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!acceptedTerms) {
+      toast({
+        title: "Terms Required",
+        description: "Please accept the Terms of Service and Privacy Policy.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      await register(name, email, password);
+      
+      toast({
+        title: "Registration Successful",
+        description: "Welcome to CrimeWatch Bangladesh! Please check your email to confirm your account.",
+      });
+      
+      navigate('/');
+    } catch (error: any) {
+      console.error('Registration failed:', error);
+      
+      let errorMessage = "Please try again with different information.";
+      
+      if (error.message?.includes('User already registered')) {
+        errorMessage = "An account with this email already exists. Please try signing in instead.";
+      } else if (error.message?.includes('Password should be at least 6 characters')) {
+        errorMessage = "Password must be at least 6 characters long.";
+      } else if (error.message?.includes('Invalid email')) {
+        errorMessage = "Please enter a valid email address.";
+      } else if (error.message?.includes('Signup is disabled')) {
+        errorMessage = "Account registration is currently disabled. Please contact support.";
+      }
+      
+      toast({
+        title: "Registration Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSocialLogin = (provider: string) => {
-    // In a real app, authenticate with social provider
     toast({
-      title: `${provider} Signup Initiated`,
-      description: `Creating account with ${provider}...`,
+      title: `${provider} Signup`,
+      description: "Social registration will be available soon.",
     });
   };
+
+  if (authLoading) {
+    return (
+      <div className="container flex items-center justify-center min-h-[80vh]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="container flex items-center justify-center min-h-[80vh] py-8 px-4 sm:px-6">
@@ -54,6 +128,7 @@ const RegisterPage = () => {
                 placeholder="John Doe" 
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                disabled={isLoading}
                 required 
               />
             </div>
@@ -65,6 +140,7 @@ const RegisterPage = () => {
                 placeholder="name@example.com" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
                 required 
               />
             </div>
@@ -77,6 +153,7 @@ const RegisterPage = () => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
                   required 
                 />
                 <Button
@@ -85,14 +162,23 @@ const RegisterPage = () => {
                   size="icon"
                   className="absolute right-0 top-0"
                   onClick={() => setShowPassword(!showPassword)}
+                  disabled={isLoading}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
               </div>
+              <p className="text-xs text-muted-foreground">
+                Password must be at least 6 characters long
+              </p>
             </div>
 
             <div className="flex items-center space-x-2">
-              <Checkbox id="terms" />
+              <Checkbox 
+                id="terms" 
+                checked={acceptedTerms}
+                onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
+                disabled={isLoading}
+              />
               <Label htmlFor="terms" className="text-sm">
                 I agree to the{" "}
                 <Link to="/terms" className="text-primary hover:underline">
@@ -105,7 +191,16 @@ const RegisterPage = () => {
               </Label>
             </div>
 
-            <Button type="submit" className="w-full">Create Account</Button>
+            <Button type="submit" className="w-full" disabled={isLoading || !acceptedTerms}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating Account...
+                </>
+              ) : (
+                'Create Account'
+              )}
+            </Button>
           </form>
 
           <div className="relative my-4">
@@ -123,6 +218,7 @@ const RegisterPage = () => {
               type="button" 
               onClick={() => handleSocialLogin('Google')}
               className="w-full"
+              disabled={isLoading}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5 mr-2">
                 <path fill="#EA4335" d="M5.266 9.805C5.977 7.401 8.252 5.727 10.935 5.727c1.359 0 2.582.47 3.541 1.235l2.646-2.646C15.357 2.664 13.252 2 10.935 2 6.364 2 2.489 4.94 1 8.827L5.266 9.805z"/>
@@ -137,6 +233,7 @@ const RegisterPage = () => {
               type="button" 
               onClick={() => handleSocialLogin('Facebook')}
               className="w-full"
+              disabled={isLoading}
             >
               <Facebook className="h-5 w-5 mr-2 text-blue-600" />
               Facebook
