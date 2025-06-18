@@ -15,7 +15,7 @@ import { useUser } from '@/context/UserContext';
 const ReportPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { addReport, isAuthenticated, user } = useUser();
+  const { addReport, isAuthenticated, user, profile } = useUser();
   
   const [title, setTitle] = useState('');
   const [incidentType, setIncidentType] = useState('');
@@ -55,7 +55,7 @@ const ReportPage = () => {
       type: incidentType,
       description,
       severity,
-      reportedBy: isAnonymous ? 'Anonymous' : (user?.name || 'User'),
+      reportedBy: isAnonymous ? 'Anonymous' : (profile?.full_name || user?.email || 'User'),
       // Note: isUserReport is now handled internally in the addReport function
     });
     
