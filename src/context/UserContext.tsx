@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -203,63 +202,45 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = async (name: string, email: string, password: string) => {
-  console.log('Attempting registration for:', email);
-  setLoading(true);
+    console.log('Attempting registration for:', email);
+    setLoading(true);
 
-  try {
-    // First, check if the email is already registered
-    const { data: existingUser, error: lookupError } = await supabase
-      .from('auth.users') // Supabase doesn't allow direct querying of auth.users from client-side by default
-      .select('email')
-      .eq('email', email)
-      .single();
+    try {
+      // Proceed to register the user - Supabase will handle duplicate email prevention
+      const redirectUrl = `${window.location.origin}/`;
 
-    if (existingUser) {
-      // If user exists, throw a duplicate error
-      const duplicateError = new Error('An account with this email address already exists. Please sign in or use another email.');
-      duplicateError.name = 'DuplicateEmailError';
-      throw duplicateError;
-    }
-
-    // Proceed to register the user if no existing user was found
-    const redirectUrl = `${window.location.origin}/`;
-
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          full_name: name,
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            full_name: name,
+          },
         },
-      },
-    });
+      });
 
-    if (error) {
-      console.error('Registration error:', error);
+      if (error) {
+        console.error('Registration error:', error);
+        
+        // Check for duplicate email errors from Supabase
+        if (error.message?.toLowerCase().includes('already registered') ||
+            error.message?.toLowerCase().includes('email address is already in use') ||
+            error.message?.toLowerCase().includes('user already registered')) {
+          const duplicateError = new Error('An account with this email address already exists. Please sign in or use another email.');
+          duplicateError.name = 'DuplicateEmailError';
+          throw duplicateError;
+        }
+        
+        throw error;
+      }
+
+      console.log('Registration successful for:', data.user?.email);
+    } catch (error: any) {
+      setLoading(false);
       throw error;
     }
-
-    console.log('Registration successful for:', data.user?.email);
-  } catch (error: any) {
-    setLoading(false);
-
-    if (error.name === 'DuplicateEmailError') {
-      throw error;
-    }
-
-    // If user lookup failed due to permissions (common case), fallback to error message inspection
-    if (error?.message?.toLowerCase().includes('already registered') ||
-        error?.message?.toLowerCase().includes('email address is already in use') ||
-        error?.message?.toLowerCase().includes('user already registered')) {
-      const duplicateError = new Error('An account with this email address already exists. Please sign in or use another email.');
-      duplicateError.name = 'DuplicateEmailError';
-      throw duplicateError;
-    }
-
-    throw error;
-  }
-};
+  };
   
   const logout = async () => {
     console.log('Attempting logout');
