@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -221,7 +222,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // Proceed to register the user if no existing user was found
-    const redirectUrl = ${window.location.origin}/;
+    const redirectUrl = `${window.location.origin}/`;
 
     const { data, error } = await supabase.auth.signUp({
       email,
