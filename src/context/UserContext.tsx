@@ -206,14 +206,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     
     try {
-      // First, check if user already exists by attempting to sign in
-      const { data: existingUser } = await supabase.auth.signInWithPassword({
-        email,
-        password: 'dummy-password-check' // This will fail but tells us if user exists
-      });
-
-      // If we get here without error, it means the user might exist
-      // Let's try a different approach - attempt signup and handle the specific error
       const redirectUrl = `${window.location.origin}/`;
       
       const { data, error } = await supabase.auth.signUp({
@@ -230,11 +222,15 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) {
         console.error('Registration error:', error);
         
-        // Check for specific error messages that indicate user already exists
-        if (error.message?.includes('User already registered') || 
-            error.message?.includes('already been registered') ||
-            error.message?.includes('email address is already in use')) {
-          const duplicateError = new Error('An account with this email already exists. Please try signing in instead.');
+        // Handle specific error cases for duplicate emails
+        if (error.message?.toLowerCase().includes('user already registered') || 
+            error.message?.toLowerCase().includes('already been registered') ||
+            error.message?.toLowerCase().includes('email address is already in use') ||
+            error.message?.toLowerCase().includes('already registered') ||
+            error.message?.toLowerCase().includes('signup is disabled')) {
+          
+          // Create a specific error for duplicate email
+          const duplicateError = new Error('An account with this email address already exists. Please try signing in instead or use a different email address.');
           duplicateError.name = 'DuplicateEmailError';
           throw duplicateError;
         }
@@ -242,7 +238,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw error;
       }
 
-      // Check if user was created but not confirmed (signup succeeded)
+      // Check if signup was successful but user needs email confirmation
       if (data.user && !data.user.email_confirmed_at) {
         console.log('Registration successful - confirmation email sent:', data.user?.email);
         console.log('Email redirect URL set to:', redirectUrl);
@@ -250,6 +246,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('Registration successful - user already confirmed:', data.user?.email);
       }
       
+      // Important: If we get here without an error, registration was successful
       // The onAuthStateChange listener will handle the state updates
     } catch (error) {
       setLoading(false);

@@ -72,14 +72,11 @@ const RegisterPage = () => {
     } catch (error: any) {
       console.error('Registration failed:', error);
       
-      let errorMessage = "Please try again with different information.";
-      
-      // Handle specific duplicate email error
+      // Handle specific duplicate email error first
       if (error.name === 'DuplicateEmailError') {
-        errorMessage = error.message;
         toast({
           title: "Account Already Exists",
-          description: errorMessage,
+          description: error.message,
           variant: "destructive",
         });
         setIsLoading(false);
@@ -87,10 +84,13 @@ const RegisterPage = () => {
       }
       
       // Handle other specific errors
-      if (error.message?.includes('User already registered') || 
-          error.message?.includes('already been registered') ||
-          error.message?.includes('email address is already in use')) {
-        errorMessage = "An account with this email already exists. Please try signing in instead.";
+      let errorMessage = "Registration failed. Please try again.";
+      
+      if (error.message?.toLowerCase().includes('user already registered') || 
+          error.message?.toLowerCase().includes('already been registered') ||
+          error.message?.toLowerCase().includes('email address is already in use') ||
+          error.message?.toLowerCase().includes('already registered')) {
+        errorMessage = "An account with this email address already exists. Please try signing in instead or use a different email address.";
         toast({
           title: "Account Already Exists",
           description: errorMessage,
@@ -110,7 +110,7 @@ const RegisterPage = () => {
           description: errorMessage,
           variant: "destructive",
         });
-      } else if (error.message?.includes('Signup is disabled')) {
+      } else if (error.message?.toLowerCase().includes('signup is disabled')) {
         errorMessage = "Account registration is currently disabled. Please contact support.";
         toast({
           title: "Registration Failed",
