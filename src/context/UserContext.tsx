@@ -221,8 +221,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Registration error:', error);
+        setLoading(false);
         
-        // Handle specific error cases for duplicate emails
+        // Handle specific error cases for duplicate emails - throw immediately
         if (error.message?.toLowerCase().includes('user already registered') || 
             error.message?.toLowerCase().includes('already been registered') ||
             error.message?.toLowerCase().includes('email address is already in use') ||
@@ -235,19 +236,16 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
           throw duplicateError;
         }
         
+        // For any other error, just throw it
         throw error;
       }
 
-      // Check if signup was successful but user needs email confirmation
-      if (data.user && !data.user.email_confirmed_at) {
-        console.log('Registration successful - confirmation email sent:', data.user?.email);
-        console.log('Email redirect URL set to:', redirectUrl);
-      } else if (data.user && data.user.email_confirmed_at) {
-        console.log('Registration successful - user already confirmed:', data.user?.email);
-      }
+      // If we reach here, registration was successful
+      console.log('Registration successful for:', data.user?.email);
       
-      // Important: If we get here without an error, registration was successful
+      // Don't set loading to false here - let the auth state change handle it
       // The onAuthStateChange listener will handle the state updates
+      
     } catch (error) {
       setLoading(false);
       throw error;

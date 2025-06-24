@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Eye, EyeOff, Facebook, Loader2 } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useUser } from '@/context/UserContext';
 
@@ -63,6 +63,7 @@ const RegisterPage = () => {
     try {
       await register(name, email, password);
       
+      // Only show success message if we get here without errors
       toast({
         title: "Registration Successful",
         description: "Welcome to CrimeWatch Bangladesh! Please check your email to confirm your account.",
@@ -71,6 +72,7 @@ const RegisterPage = () => {
       navigate('/');
     } catch (error: any) {
       console.error('Registration failed:', error);
+      setIsLoading(false);
       
       // Handle specific duplicate email error first
       if (error.name === 'DuplicateEmailError') {
@@ -79,8 +81,7 @@ const RegisterPage = () => {
           description: error.message,
           variant: "destructive",
         });
-        setIsLoading(false);
-        return;
+        return; // Stop here, don't show success message
       }
       
       // Handle other specific errors
@@ -124,8 +125,6 @@ const RegisterPage = () => {
           variant: "destructive",
         });
       }
-    } finally {
-      setIsLoading(false);
     }
   };
 
