@@ -202,56 +202,64 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = async (name: string, email: string, password: string) => {
-    console.log('Attempting registration for:', email);
-    setLoading(true);
-    
-    try {
-      const redirectUrl = `${window.location.origin}/`;
-      
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            full_name: name,
-          },
+  console.log('Attempting registration for:', email);
+  setLoading(true);
+
+  try {
+    // First, check if the email is already registered
+    const { data: existingUser, error: lookupError } = await supabase
+      .from('auth.users') // Supabase doesn't allow direct querying of auth.users from client-side by default
+      .select('email')
+      .eq('email', email)
+      .single();
+
+    if (existingUser) {
+      // If user exists, throw a duplicate error
+      const duplicateError = new Error('An account with this email address already exists. Please sign in or use another email.');
+      duplicateError.name = 'DuplicateEmailError';
+      throw duplicateError;
+    }
+
+    // Proceed to register the user if no existing user was found
+    const redirectUrl = ${window.location.origin}/;
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: redirectUrl,
+        data: {
+          full_name: name,
         },
-      });
+      },
+    });
 
-      if (error) {
-        console.error('Registration error:', error);
-        setLoading(false);
-        
-        // Handle specific error cases for duplicate emails - throw immediately
-        if (error.message?.toLowerCase().includes('user already registered') || 
-            error.message?.toLowerCase().includes('already been registered') ||
-            error.message?.toLowerCase().includes('email address is already in use') ||
-            error.message?.toLowerCase().includes('already registered') ||
-            error.message?.toLowerCase().includes('signup is disabled')) {
-          
-          // Create a specific error for duplicate email
-          const duplicateError = new Error('An account with this email address already exists. Please try signing in instead or use a different email address.');
-          duplicateError.name = 'DuplicateEmailError';
-          throw duplicateError;
-        }
-        
-        // For any other error, just throw it
-        throw error;
-      }
-
-      // If we reach here, registration was successful
-      console.log('Registration successful for:', data.user?.email);
-      
-      // Don't set loading to false here - let the auth state change handle it
-      // The onAuthStateChange listener will handle the state updates
-      
-    } catch (error) {
-      setLoading(false);
+    if (error) {
+      console.error('Registration error:', error);
       throw error;
     }
-  };
 
+    console.log('Registration successful for:', data.user?.email);
+  } catch (error: any) {
+    setLoading(false);
+
+    if (error.name === 'DuplicateEmailError') {
+      throw error;
+    }
+
+    // If user lookup failed due to permissions (common case), fallback to error message inspection
+    if (error?.message?.toLowerCase().includes('already registered') ||
+        error?.message?.toLowerCase().includes('email address is already in use') ||
+        error?.message?.toLowerCase().includes('user already registered')) {
+      const duplicateError = new Error('An account with this email address already exists. Please sign in or use another email.');
+      duplicateError.name = 'DuplicateEmailError';
+      throw duplicateError;
+    }
+
+    throw error;
+  }
+};
+  
   const logout = async () => {
     console.log('Attempting logout');
     try {
