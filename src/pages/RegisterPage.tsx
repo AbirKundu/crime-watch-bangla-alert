@@ -74,21 +74,56 @@ const RegisterPage = () => {
       
       let errorMessage = "Please try again with different information.";
       
-      if (error.message?.includes('User already registered')) {
-        errorMessage = "An account with this email already exists. Please try signing in instead.";
-      } else if (error.message?.includes('Password should be at least 6 characters')) {
-        errorMessage = "Password must be at least 6 characters long.";
-      } else if (error.message?.includes('Invalid email')) {
-        errorMessage = "Please enter a valid email address.";
-      } else if (error.message?.includes('Signup is disabled')) {
-        errorMessage = "Account registration is currently disabled. Please contact support.";
+      // Handle specific duplicate email error
+      if (error.name === 'DuplicateEmailError') {
+        errorMessage = error.message;
+        toast({
+          title: "Account Already Exists",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
       }
       
-      toast({
-        title: "Registration Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      // Handle other specific errors
+      if (error.message?.includes('User already registered') || 
+          error.message?.includes('already been registered') ||
+          error.message?.includes('email address is already in use')) {
+        errorMessage = "An account with this email already exists. Please try signing in instead.";
+        toast({
+          title: "Account Already Exists",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } else if (error.message?.includes('Password should be at least 6 characters')) {
+        errorMessage = "Password must be at least 6 characters long.";
+        toast({
+          title: "Registration Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } else if (error.message?.includes('Invalid email')) {
+        errorMessage = "Please enter a valid email address.";
+        toast({
+          title: "Registration Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } else if (error.message?.includes('Signup is disabled')) {
+        errorMessage = "Account registration is currently disabled. Please contact support.";
+        toast({
+          title: "Registration Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Registration Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }

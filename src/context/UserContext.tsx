@@ -206,7 +206,14 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     
     try {
-      // Use the current origin to ensure proper redirect
+      // First, check if user already exists by attempting to sign in
+      const { data: existingUser } = await supabase.auth.signInWithPassword({
+        email,
+        password: 'dummy-password-check' // This will fail but tells us if user exists
+      });
+
+      // If we get here without error, it means the user might exist
+      // Let's try a different approach - attempt signup and handle the specific error
       const redirectUrl = `${window.location.origin}/`;
       
       const { data, error } = await supabase.auth.signUp({
@@ -222,11 +229,27 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Registration error:', error);
+        
+        // Check for specific error messages that indicate user already exists
+        if (error.message?.includes('User already registered') || 
+            error.message?.includes('already been registered') ||
+            error.message?.includes('email address is already in use')) {
+          const duplicateError = new Error('An account with this email already exists. Please try signing in instead.');
+          duplicateError.name = 'DuplicateEmailError';
+          throw duplicateError;
+        }
+        
         throw error;
       }
 
-      console.log('Registration successful:', data.user?.email);
-      console.log('Email redirect URL set to:', redirectUrl);
+      // Check if user was created but not confirmed (signup succeeded)
+      if (data.user && !data.user.email_confirmed_at) {
+        console.log('Registration successful - confirmation email sent:', data.user?.email);
+        console.log('Email redirect URL set to:', redirectUrl);
+      } else if (data.user && data.user.email_confirmed_at) {
+        console.log('Registration successful - user already confirmed:', data.user?.email);
+      }
+      
       // The onAuthStateChange listener will handle the state updates
     } catch (error) {
       setLoading(false);
