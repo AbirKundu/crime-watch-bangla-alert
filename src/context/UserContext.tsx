@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -41,7 +42,7 @@ type UserContextType = {
   register: (name: string, email: string, password: string) => Promise<AuthResult>;
   logout: () => void;
   userReports: UserReport[];
-  addReport: (report: Omit<UserReport, 'id' | 'time'>) => void;
+  addReport: (report: Omit<UserReport, 'id' | 'time'>) => Promise<void>;
   allReports: UserReport[];
   loading: boolean;
 };
@@ -262,16 +263,57 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const addReport = (report: Omit<UserReport, 'id' | 'time'>) => {
-    const newReport: UserReport = {
-      ...report,
-      id: Date.now(), // Generate a unique ID
-      time: "Just now", // Current time
-      isUserReport: true, // Always mark as user report
-      reportedBy: profile?.full_name || user?.email || 'Anonymous',
-    };
-    
-    setUserReports(prevReports => [newReport, ...prevReports]);
+  const addReport = async (report: Omit<UserReport, 'id' | 'time'>) => {
+    if (!user) {
+      console.error('User must be authenticated to add report');
+      return;
+    }
+
+    try {
+      // Extract date and time from current time for database
+      const now = new Date();
+      const reportDate = now.toISOString().split('T')[0]; // YYYY-MM-DD format
+      const reportTime = now.toTimeString().split(' ')[0]; // HH:MM:SS format
+
+      const { data, error } = await supabase
+        .from('crime_reports')
+        .insert({
+          user_id: user.id,
+          title: report.title,
+          incident_type: report.type,
+          location: report.location,
+          description: report.description,
+          severity: report.severity,
+          report_date: reportDate,
+          report_time: reportTime,
+          is_anonymous: report.reportedBy === 'Anonymous',
+          reported_by: report.reportedBy,
+          image_url: report.imageUrl,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error saving report to database:', error);
+        throw error;
+      }
+
+      console.log('Report saved to database:', data);
+
+      // Also add to local state for immediate UI update
+      const newReport: UserReport = {
+        ...report,
+        id: Date.now(), // Use timestamp as fallback ID for UI
+        time: "Just now",
+        isUserReport: true,
+        reportedBy: report.reportedBy || profile?.full_name || user?.email || 'Anonymous',
+      };
+      
+      setUserReports(prevReports => [newReport, ...prevReports]);
+    } catch (error) {
+      console.error('Error in addReport:', error);
+      throw error;
+    }
   };
 
   const isAuthenticated = !!user;
