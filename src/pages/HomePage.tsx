@@ -6,38 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 
 import CrimeMap from '@/components/CrimeMap';
-import CrimeCard, { CrimeIncident } from '@/components/CrimeCard';
-
-// Sample recent incidents
-const recentIncidents: CrimeIncident[] = [
-  {
-    id: 1,
-    title: "Armed Robbery at Convenience Store",
-    location: "Banani, Dhaka",
-    time: "Today, 2:30 PM",
-    type: "Robbery",
-    description: "Two armed individuals robbed a convenience store. Police are investigating. No injuries reported.",
-    severity: "high"
-  },
-  {
-    id: 2,
-    title: "Vehicle Break-in",
-    location: "Dhanmondi, Dhaka",
-    time: "Today, 11:15 AM",
-    type: "Theft",
-    description: "Multiple vehicles reported broken into with valuables stolen from inside.",
-    severity: "medium"
-  },
-  {
-    id: 3,
-    title: "Suspicious Activity",
-    location: "Gulshan 2, Dhaka",
-    time: "Yesterday, 9:45 PM",
-    type: "Suspicious",
-    description: "Residents reported suspicious individuals surveilling residences in the area.",
-    severity: "low"
-  }
-];
 
 const HomePage = () => {
   return (
@@ -87,20 +55,6 @@ const HomePage = () => {
           </Button>
         </div>
         <CrimeMap />
-      </section>
-
-      <section>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Recent Incidents</h2>
-          <Button variant="outline" asChild size="sm">
-            <Link to="/news">View All</Link>
-          </Button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {recentIncidents.map(incident => (
-            <CrimeCard key={incident.id} incident={incident} />
-          ))}
-        </div>
       </section>
     </div>
   );
