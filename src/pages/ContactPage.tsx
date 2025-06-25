@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,19 +7,78 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Phone, MapPin, Mail, MessageCircle } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useUser } from '@/context/UserContext';
 
 const ContactPage = () => {
   const { toast } = useToast();
+  const { user } = useUser();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+  });
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    
-    toast({
-      title: "Message Sent",
-      description: "We've received your message and will respond as soon as possible.",
-    });
-    
-    // In a real app, this would send the data to an API endpoint
+    setIsSubmitting(true);
+
+    try {
+      const { error } = await supabase
+        .from('contact_messages')
+        .insert([
+          {
+            name: formData.name,
+            email: formData.email,
+            subject: formData.subject,
+            message: formData.message,
+            user_id: user?.id || null // Include user_id if user is authenticated
+          }
+        ]);
+
+      if (error) {
+        console.error('Error submitting contact form:', error);
+        toast({
+          title: "Submission Failed",
+          description: "There was an error submitting your message. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Message Sent Successfully",
+        description: "We've received your message and will respond as soon as possible.",
+      });
+
+      // Reset form after successful submission
+      setFormData({
+        name: '',
+        email: '',
+        subject: '',
+        message: ''
+      });
+
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast({
+        title: "Submission Failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -43,31 +102,62 @@ const ContactPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" placeholder="Your name" required />
+                    <Input 
+                      id="name" 
+                      name="name"
+                      placeholder="Your name" 
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      required 
+                    />
                   </div>
                   
                   <div className="space-y-2">
                     <Label htmlFor="email">Email Address</Label>
-                    <Input id="email" type="email" placeholder="Your email" required />
+                    <Input 
+                      id="email" 
+                      name="email"
+                      type="email" 
+                      placeholder="Your email" 
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      required 
+                    />
                   </div>
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="subject">Subject</Label>
-                  <Input id="subject" placeholder="Message subject" required />
+                  <Input 
+                    id="subject" 
+                    name="subject"
+                    placeholder="Message subject" 
+                    value={formData.subject}
+                    onChange={handleInputChange}
+                    required 
+                  />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="message">Message</Label>
                   <Textarea 
                     id="message" 
+                    name="message"
                     placeholder="Your message here..." 
                     rows={5}
+                    value={formData.message}
+                    onChange={handleInputChange}
                     required
                   />
                 </div>
                 
-                <Button type="submit" className="w-full">Send Message</Button>
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Sending...' : 'Send Message'}
+                </Button>
               </form>
             </CardContent>
           </Card>
