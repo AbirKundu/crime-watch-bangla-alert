@@ -31,6 +31,27 @@ type UserProfile = {
   updated_at: string;
 };
 
+// Database types (temporary until Supabase types are updated)
+type DatabaseReport = {
+  id: string;
+  user_id: string;
+  title: string;
+  location: string;
+  incident_type: string;
+  description: string;
+  severity: 'low' | 'medium' | 'high';
+  reporter_name: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type DatabaseProfile = {
+  id: string;
+  full_name: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 type UserContextType = {
   isAuthenticated: boolean;
   user: User | null;
@@ -167,7 +188,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchUserProfile = async (userId: string) => {
     try {
       console.log('Fetching profile for user:', userId);
-      const { data, error } = await supabase
+      // Use type assertion to handle the case where types aren't updated yet
+      const { data, error } = await (supabase as any)
         .from('profiles')
         .select('*')
         .eq('id', userId)
@@ -179,7 +201,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       console.log('Profile fetched:', data);
-      setProfile(data);
+      setProfile(data as DatabaseProfile);
     } catch (error) {
       console.error('Error in fetchUserProfile:', error);
     }
@@ -189,23 +211,23 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('Fetching reports for user:', userId);
       
-      // Check if crime_reports table exists by attempting to query it
-      const { data, error } = await supabase
+      // Use type assertion to handle the case where types aren't updated yet
+      const { data, error } = await (supabase as any)
         .from('crime_reports')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.log('Crime reports table not found or error:', error.message);
-        // Fall back to initial user reports if table doesn't exist
+        console.log('Crime reports table error:', error.message);
+        // Fall back to initial user reports if table doesn't exist or has issues
         setUserReports(initialUserReports);
         return;
       }
 
       // Transform database data to match our UserReport type
-      const transformedReports: UserReport[] = data.map(report => ({
-        id: parseInt(report.id) || Date.now(), // Convert UUID to number or use timestamp
+      const transformedReports: UserReport[] = (data as DatabaseReport[]).map(report => ({
+        id: parseInt(report.id.substring(0, 8), 16) || Date.now(), // Convert UUID to number
         title: report.title,
         location: report.location,
         time: formatTimeAgo(report.created_at),
@@ -327,8 +349,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      // Try to save to database first
-      const { data, error } = await supabase
+      // Try to save to database first using type assertion
+      const { data, error } = await (supabase as any)
         .from('crime_reports')
         .insert([
           {
