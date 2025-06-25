@@ -1,8 +1,11 @@
+
 import React, { useEffect, useState, useRef } from 'react';
-import { MapPin, AlertTriangle, Shield, Activity } from 'lucide-react';
+import { MapPin, AlertTriangle, Shield, Activity, LogIn, UserPlus } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -15,7 +18,7 @@ L.Icon.Default.mergeOptions({
 });
 
 const CrimeMap = ({ fullHeight = false }) => {
-  const { allReports } = useUser();
+  const { allReports, isAuthenticated } = useUser();
   const [selectedReport, setSelectedReport] = useState(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -101,7 +104,7 @@ const CrimeMap = ({ fullHeight = false }) => {
 
   // Initialize map
   useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current) return;
+    if (!mapContainerRef.current || mapRef.current || !isAuthenticated) return;
 
     // Create map centered on Dhaka, Bangladesh
     mapRef.current = L.map(mapContainerRef.current).setView([23.8103, 90.4125], 11);
@@ -118,11 +121,11 @@ const CrimeMap = ({ fullHeight = false }) => {
         mapRef.current = null;
       }
     };
-  }, []);
+  }, [isAuthenticated]);
 
   // Update markers when mappable reports change
   useEffect(() => {
-    if (!mapRef.current) return;
+    if (!mapRef.current || !isAuthenticated) return;
 
     // Clear existing markers
     markersRef.current.forEach(marker => {
@@ -165,7 +168,68 @@ const CrimeMap = ({ fullHeight = false }) => {
       const group = L.featureGroup(markersRef.current);
       mapRef.current.fitBounds(group.getBounds().pad(0.1));
     }
-  }, [mappableReports]);
+  }, [mappableReports, isAuthenticated]);
+
+  // Show login prompt if user is not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className={`relative w-full ${fullHeight ? 'h-[calc(100vh-11rem)]' : 'h-[400px]'} rounded-lg overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 border border-border/50`}>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Card className="max-w-md mx-4 bg-background/95 backdrop-blur-sm shadow-lg">
+            <CardContent className="p-8 text-center">
+              <div className="mb-4">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                  <MapPin className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Live Crime Map</h3>
+                <p className="text-muted-foreground mb-6">
+                  Access real-time crime data and community reports to stay informed about safety in your area.
+                </p>
+              </div>
+              
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground font-medium">
+                  Sign in to view the interactive crime map
+                </p>
+                
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button asChild className="flex-1">
+                    <Link to="/login">
+                      <LogIn className="w-4 h-4 mr-2" />
+                      Sign In
+                    </Link>
+                  </Button>
+                  <Button variant="outline" asChild className="flex-1">
+                    <Link to="/register">
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Create Account
+                    </Link>
+                  </Button>
+                </div>
+                
+                <div className="pt-4 border-t">
+                  <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                      <span>High Risk</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                      <span>Medium Risk</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span>Low Risk</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`relative w-full ${fullHeight ? 'h-[calc(100vh-11rem)]' : 'h-[400px]'} rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800`}>
