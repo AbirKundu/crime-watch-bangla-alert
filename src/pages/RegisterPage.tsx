@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -103,12 +102,25 @@ const RegisterPage = () => {
     }
 
     if (!emailValidated) {
-      toast({
-        title: "Email Validation Required",
-        description: "Please ensure your email is available before registering.",
-        variant: "destructive",
-      });
-      return;
+      // Double-check email availability before proceeding
+      const result = await validateEmailAvailability(email);
+      if (result.exists) {
+        toast({
+          title: "Email Already Registered",
+          description: "This email address is already registered. Please use a different email or sign in instead.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (result.error) {
+        toast({
+          title: "Email Validation Failed",
+          description: "Please ensure your email is valid and try again.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setIsLoading(true);
