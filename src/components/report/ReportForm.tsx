@@ -142,6 +142,7 @@ export const ReportForm: React.FC = () => {
     }
     
     // Add the report to our context - always anonymous now
+    // Only include showOnMap flag when useCurrentLocation is true
     await addReport({
       title,
       location: finalLocation,
@@ -149,12 +150,17 @@ export const ReportForm: React.FC = () => {
       description,
       severity,
       reportedBy: 'Anonymous',
-      imageUrl
+      imageUrl,
+      showOnMap: useCurrentLocation // Only show on map if current location was used
     });
+    
+    const mapMessage = useCurrentLocation 
+      ? "It will appear in the live alerts section, news page, and on the interactive map with your precise location."
+      : "It will appear in the live alerts section and news page. The location will be stored but not shown on the map for privacy.";
     
     toast({
       title: "Report Submitted",
-      description: "Thank you for your anonymous report with precise location data. It will appear in the live alerts section and news page.",
+      description: `Thank you for your anonymous report. ${mapMessage}`,
       variant: "default",
     });
     
@@ -177,7 +183,7 @@ export const ReportForm: React.FC = () => {
     <Card className="bg-card/70 backdrop-blur-sm border-border/50">
       <CardHeader>
         <CardTitle className="text-2xl">Anonymous Incident Report</CardTitle>
-        <CardDescription>Fill in the details about what you witnessed. All reports are submitted anonymously with precise location data to protect your identity while providing accurate information.</CardDescription>
+        <CardDescription>Fill in the details about what you witnessed. All reports are submitted anonymously. Enable "Use my current location" to show the incident on the interactive map with precise coordinates, or keep it disabled to store the location privately.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">

@@ -21,6 +21,9 @@ const CrimeMap = ({ fullHeight = false }) => {
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
 
+  // Filter reports to only include those that should be shown on the map
+  const mappableReports = allReports.filter(report => report.showOnMap !== false);
+
   // Parse coordinates from location string or return default coordinates for Bangladesh
   const parseLocationCoordinates = (location: string) => {
     // Check if location contains coordinates in format "lat,lng" or "latitude,longitude"
@@ -117,7 +120,7 @@ const CrimeMap = ({ fullHeight = false }) => {
     };
   }, []);
 
-  // Update markers when reports change
+  // Update markers when mappable reports change
   useEffect(() => {
     if (!mapRef.current) return;
 
@@ -127,8 +130,8 @@ const CrimeMap = ({ fullHeight = false }) => {
     });
     markersRef.current = [];
 
-    // Add new markers
-    allReports.forEach((report) => {
+    // Add new markers only for mappable reports
+    mappableReports.forEach((report) => {
       const coords = parseLocationCoordinates(report.location);
       const icon = createCustomIcon(report.severity);
       
@@ -162,7 +165,7 @@ const CrimeMap = ({ fullHeight = false }) => {
       const group = L.featureGroup(markersRef.current);
       mapRef.current.fitBounds(group.getBounds().pad(0.1));
     }
-  }, [allReports]);
+  }, [mappableReports]);
 
   return (
     <div className={`relative w-full ${fullHeight ? 'h-[calc(100vh-11rem)]' : 'h-[400px]'} rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800`}>
@@ -187,6 +190,9 @@ const CrimeMap = ({ fullHeight = false }) => {
           </div>
         </div>
         <div className="mt-2 pt-2 border-t text-xs text-muted-foreground">
+          Map Reports: {mappableReports.length}
+        </div>
+        <div className="mt-1 text-xs text-muted-foreground">
           Total Reports: {allReports.length}
         </div>
         <div className="mt-1 text-xs text-orange-600">

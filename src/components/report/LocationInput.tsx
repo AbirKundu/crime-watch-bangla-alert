@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -146,9 +145,10 @@ export const LocationInput: React.FC<LocationInputProps> = ({
       </div>
       
       <div className="text-xs text-muted-foreground space-y-1">
-        <p>• For exact positioning, use coordinates format: latitude, longitude</p>
-        <p>• Example: 23.8103, 90.4125 (Dhaka coordinates)</p>
-        <p>• Or enter an address for approximate location</p>
+        <p><strong>Privacy Notice:</strong></p>
+        <p>• Enable "Use my current location" to show the incident on the map with precise coordinates</p>
+        <p>• Keep it disabled to store the location privately (won't be shown on the public map)</p>
+        <p>• For manual entry: use coordinates format (23.8103, 90.4125) or enter an address</p>
       </div>
     </div>
   );
