@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { MapPin, AlertTriangle, Shield, Activity } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
@@ -22,12 +21,8 @@ const CrimeMap = ({ fullHeight = false }) => {
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
 
-  // Show all reports on the map - no authentication restriction
+  // Filter reports to only include those that should be shown on the map
   const mappableReports = allReports.filter(report => report.showOnMap !== false);
-
-  console.log('All reports from database:', allReports.length);
-  console.log('Mappable reports for display:', mappableReports.length);
-  console.log('Sample reports:', allReports.slice(0, 3));
 
   // Parse coordinates from location string or return default coordinates for Bangladesh
   const parseLocationCoordinates = (location: string) => {
@@ -51,14 +46,6 @@ const CrimeMap = ({ fullHeight = false }) => {
       'wari': { lat: 23.7104, lng: 90.4074, name: 'Wari' },
       'old dhaka': { lat: 23.7104, lng: 90.4074, name: 'Old Dhaka' },
       'current location': { lat: 23.8103, lng: 90.4125, name: 'Current Location' },
-      'dhaka': { lat: 23.8103, lng: 90.4125, name: 'Dhaka' },
-      'chittagong': { lat: 22.3569, lng: 91.7832, name: 'Chittagong' },
-      'sylhet': { lat: 24.8949, lng: 91.8687, name: 'Sylhet' },
-      'rajshahi': { lat: 24.3745, lng: 88.6042, name: 'Rajshahi' },
-      'khulna': { lat: 22.8456, lng: 89.5403, name: 'Khulna' },
-      'barisal': { lat: 22.7010, lng: 90.3535, name: 'Barisal' },
-      'rangpur': { lat: 25.7439, lng: 89.2752, name: 'Rangpur' },
-      'comilla': { lat: 23.4607, lng: 91.1809, name: 'Comilla' },
     };
 
     const locationKey = location.toLowerCase();
@@ -137,25 +124,16 @@ const CrimeMap = ({ fullHeight = false }) => {
   useEffect(() => {
     if (!mapRef.current) return;
 
-    console.log('Updating markers for', mappableReports.length, 'reports');
-
     // Clear existing markers
     markersRef.current.forEach(marker => {
       mapRef.current?.removeLayer(marker);
     });
     markersRef.current = [];
 
-    // Add new markers for all mappable reports
-    mappableReports.forEach((report, index) => {
+    // Add new markers only for mappable reports
+    mappableReports.forEach((report) => {
       const coords = parseLocationCoordinates(report.location);
       const icon = createCustomIcon(report.severity);
-      
-      console.log(`Adding marker ${index + 1}:`, {
-        title: report.title,
-        location: report.location,
-        coords: coords,
-        severity: report.severity
-      });
       
       const marker = L.marker([coords.lat, coords.lng], { icon })
         .addTo(mapRef.current!)
@@ -185,15 +163,8 @@ const CrimeMap = ({ fullHeight = false }) => {
     // Fit map to show all markers if there are any
     if (markersRef.current.length > 0) {
       const group = L.featureGroup(markersRef.current);
-      try {
-        mapRef.current.fitBounds(group.getBounds().pad(0.1));
-      } catch (error) {
-        console.log('Could not fit bounds, using default view');
-        mapRef.current.setView([23.8103, 90.4125], 11);
-      }
+      mapRef.current.fitBounds(group.getBounds().pad(0.1));
     }
-
-    console.log('Total markers added:', markersRef.current.length);
   }, [mappableReports]);
 
   return (
@@ -203,10 +174,7 @@ const CrimeMap = ({ fullHeight = false }) => {
       
       {/* Map legend - positioned in left middle */}
       <div className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-background/90 backdrop-blur-sm rounded-lg p-3 shadow-lg z-[1000]">
-        <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-          <Shield className="h-4 w-4 text-primary" />
-          Crime Data
-        </h3>
+        <h3 className="text-sm font-semibold mb-2">Incident Severity</h3>
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-xs">
             <div className="w-3 h-3 bg-red-500 rounded-full"></div>
@@ -222,16 +190,13 @@ const CrimeMap = ({ fullHeight = false }) => {
           </div>
         </div>
         <div className="mt-2 pt-2 border-t text-xs text-muted-foreground">
-          Incidents Shown: {mappableReports.length}
+          Map Reports: {mappableReports.length}
         </div>
         <div className="mt-1 text-xs text-muted-foreground">
           Total Reports: {allReports.length}
         </div>
         <div className="mt-1 text-xs text-orange-600">
           ⚠ Some locations are approximate
-        </div>
-        <div className="mt-1 text-xs text-blue-600">
-          🔓 Public access - No login required
         </div>
       </div>
     </div>
