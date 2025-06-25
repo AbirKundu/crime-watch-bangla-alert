@@ -26,17 +26,18 @@ const CrimeCard: React.FC<CrimeCardProps> = ({ incident }) => {
     low: 'bg-green-600 text-white',
   };
 
+  // Use placeholder image if no imageUrl is provided
+  const displayImage = incident.imageUrl || 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=300&fit=crop';
+
   return (
     <Card className="overflow-hidden border-border/50 bg-card/70 backdrop-blur-sm hover:bg-card/90 transition-colors">
-      {incident.imageUrl && (
-        <div className="w-full h-48 overflow-hidden">
-          <img 
-            src={incident.imageUrl} 
-            alt={incident.title} 
-            className="w-full h-full object-cover object-center hover:scale-105 transition-transform duration-300"
-          />
-        </div>
-      )}
+      <div className="w-full h-48 overflow-hidden">
+        <img 
+          src={displayImage} 
+          alt={incident.title} 
+          className="w-full h-full object-cover object-center hover:scale-105 transition-transform duration-300"
+        />
+      </div>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg font-bold">{incident.title}</CardTitle>
@@ -56,9 +57,8 @@ const CrimeCard: React.FC<CrimeCardProps> = ({ incident }) => {
       <CardContent>
         <p className="text-sm">{incident.description}</p>
       </CardContent>
-      <CardFooter className="pt-2 flex justify-between">
+      <CardFooter className="pt-2">
         <Badge variant="outline">{incident.type}</Badge>
-        <button className="text-xs text-primary hover:underline">More Info</button>
       </CardFooter>
     </Card>
   );
