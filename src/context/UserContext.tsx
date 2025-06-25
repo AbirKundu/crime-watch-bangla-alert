@@ -28,13 +28,17 @@ type UserProfile = {
   updated_at: string;
 };
 
+type AuthResult = {
+  error?: any;
+};
+
 type UserContextType = {
   isAuthenticated: boolean;
   user: User | null;
   profile: UserProfile | null;
   session: Session | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<AuthResult>;
   logout: () => void;
   userReports: UserReport[];
   addReport: (report: Omit<UserReport, 'id' | 'time'>) => void;
@@ -201,7 +205,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (name: string, email: string, password: string) => {
+  const register = async (name: string, email: string, password: string): Promise<AuthResult> => {
     console.log('Attempting registration for:', email);
     setLoading(true);
 
@@ -229,16 +233,17 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
             error.message?.toLowerCase().includes('user already registered')) {
           const duplicateError = new Error('An account with this email address already exists. Please sign in or use another email.');
           duplicateError.name = 'DuplicateEmailError';
-          throw duplicateError;
+          return { error: duplicateError };
         }
         
-        throw error;
+        return { error };
       }
 
       console.log('Registration successful for:', data.user?.email);
+      return {};
     } catch (error: any) {
       setLoading(false);
-      throw error;
+      return { error };
     }
   };
   
