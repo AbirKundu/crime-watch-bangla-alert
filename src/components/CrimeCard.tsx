@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 
 export interface CrimeIncident {
-  id: number;
+  id: string; // Changed from number to string to match UUID from database
   title: string;
   location: string;
   time: string;
