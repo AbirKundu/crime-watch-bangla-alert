@@ -14,7 +14,7 @@ export const GuidelinesCard: React.FC = () => {
         <p>• Describe individuals involved</p>
         <p>• Note any vehicles or weapons seen</p>
         <p>• Add photo evidence if available</p>
-        <p className="text-muted-foreground mt-4 text-xs">Your identity will be protected if you choose to report anonymously.</p>
+        <p className="text-muted-foreground mt-4 text-xs">All reports are submitted anonymously to protect your identity and encourage community participation.</p>
       </CardContent>
     </Card>
   );

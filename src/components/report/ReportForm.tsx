@@ -13,14 +13,13 @@ import { ImageUpload } from './ImageUpload';
 export const ReportForm: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { addReport, isAuthenticated, user, profile } = useUser();
+  const { addReport, isAuthenticated, user } = useUser();
   
   const [title, setTitle] = useState('');
   const [incidentType, setIncidentType] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
   const [useCurrentLocation, setUseCurrentLocation] = useState(false);
-  const [isAnonymous, setIsAnonymous] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -137,20 +136,20 @@ export const ReportForm: React.FC = () => {
       severity = "low";
     }
     
-    // Add the report to our context
+    // Add the report to our context - always anonymous now
     await addReport({
       title,
       location: useCurrentLocation ? "Current Location (Dhaka)" : location,
       type: incidentType,
       description,
       severity,
-      reportedBy: isAnonymous ? 'Anonymous' : (profile?.full_name || user?.email || 'User'),
+      reportedBy: 'Anonymous', // Always anonymous
       imageUrl
     });
     
     toast({
       title: "Report Submitted",
-      description: "Thank you for your report. It will appear in the live alerts section and news page.",
+      description: "Thank you for your anonymous report. It will appear in the live alerts section and news page.",
       variant: "default",
     });
     
@@ -160,7 +159,6 @@ export const ReportForm: React.FC = () => {
     setLocation('');
     setDescription('');
     setUseCurrentLocation(false);
-    setIsAnonymous(false);
     setSelectedFile(null);
     setImagePreview(null);
     
@@ -173,8 +171,8 @@ export const ReportForm: React.FC = () => {
   return (
     <Card className="bg-card/70 backdrop-blur-sm border-border/50">
       <CardHeader>
-        <CardTitle className="text-2xl">Incident Report</CardTitle>
-        <CardDescription>Fill in the details about what you witnessed</CardDescription>
+        <CardTitle className="text-2xl">Anonymous Incident Report</CardTitle>
+        <CardDescription>Fill in the details about what you witnessed. All reports are submitted anonymously to protect your identity.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -189,8 +187,6 @@ export const ReportForm: React.FC = () => {
             setDescription={setDescription}
             useCurrentLocation={useCurrentLocation}
             setUseCurrentLocation={setUseCurrentLocation}
-            isAnonymous={isAnonymous}
-            setIsAnonymous={setIsAnonymous}
           />
           
           <ImageUpload
@@ -207,7 +203,7 @@ export const ReportForm: React.FC = () => {
                 Uploading...
               </>
             ) : (
-              'Submit Report'
+              'Submit Anonymous Report'
             )}
           </Button>
         </form>

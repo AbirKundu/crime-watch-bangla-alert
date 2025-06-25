@@ -17,8 +17,6 @@ interface FormFieldsProps {
   setDescription: (value: string) => void;
   useCurrentLocation: boolean;
   setUseCurrentLocation: (value: boolean) => void;
-  isAnonymous: boolean;
-  setIsAnonymous: (value: boolean) => void;
 }
 
 export const FormFields: React.FC<FormFieldsProps> = ({
@@ -32,8 +30,6 @@ export const FormFields: React.FC<FormFieldsProps> = ({
   setDescription,
   useCurrentLocation,
   setUseCurrentLocation,
-  isAnonymous,
-  setIsAnonymous,
 }) => {
   return (
     <>
@@ -113,15 +109,6 @@ export const FormFields: React.FC<FormFieldsProps> = ({
           onCheckedChange={setUseCurrentLocation}
         />
         <Label htmlFor="use-location">Use my current location</Label>
-      </div>
-      
-      <div className="flex items-center space-x-4">
-        <Switch 
-          id="anonymous"
-          checked={isAnonymous}
-          onCheckedChange={setIsAnonymous}
-        />
-        <Label htmlFor="anonymous">Submit anonymously</Label>
       </div>
     </>
   );
