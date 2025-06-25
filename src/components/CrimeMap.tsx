@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { MapPin, AlertTriangle, Shield, Activity } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
@@ -24,6 +25,10 @@ const CrimeMap = ({ fullHeight = false }) => {
   // Show all reports on the map - no authentication restriction
   const mappableReports = allReports.filter(report => report.showOnMap !== false);
 
+  console.log('All reports from database:', allReports.length);
+  console.log('Mappable reports for display:', mappableReports.length);
+  console.log('Sample reports:', allReports.slice(0, 3));
+
   // Parse coordinates from location string or return default coordinates for Bangladesh
   const parseLocationCoordinates = (location: string) => {
     // Check if location contains coordinates in format "lat,lng" or "latitude,longitude"
@@ -46,6 +51,14 @@ const CrimeMap = ({ fullHeight = false }) => {
       'wari': { lat: 23.7104, lng: 90.4074, name: 'Wari' },
       'old dhaka': { lat: 23.7104, lng: 90.4074, name: 'Old Dhaka' },
       'current location': { lat: 23.8103, lng: 90.4125, name: 'Current Location' },
+      'dhaka': { lat: 23.8103, lng: 90.4125, name: 'Dhaka' },
+      'chittagong': { lat: 22.3569, lng: 91.7832, name: 'Chittagong' },
+      'sylhet': { lat: 24.8949, lng: 91.8687, name: 'Sylhet' },
+      'rajshahi': { lat: 24.3745, lng: 88.6042, name: 'Rajshahi' },
+      'khulna': { lat: 22.8456, lng: 89.5403, name: 'Khulna' },
+      'barisal': { lat: 22.7010, lng: 90.3535, name: 'Barisal' },
+      'rangpur': { lat: 25.7439, lng: 89.2752, name: 'Rangpur' },
+      'comilla': { lat: 23.4607, lng: 91.1809, name: 'Comilla' },
     };
 
     const locationKey = location.toLowerCase();
@@ -124,16 +137,25 @@ const CrimeMap = ({ fullHeight = false }) => {
   useEffect(() => {
     if (!mapRef.current) return;
 
+    console.log('Updating markers for', mappableReports.length, 'reports');
+
     // Clear existing markers
     markersRef.current.forEach(marker => {
       mapRef.current?.removeLayer(marker);
     });
     markersRef.current = [];
 
-    // Add new markers only for mappable reports
-    mappableReports.forEach((report) => {
+    // Add new markers for all mappable reports
+    mappableReports.forEach((report, index) => {
       const coords = parseLocationCoordinates(report.location);
       const icon = createCustomIcon(report.severity);
+      
+      console.log(`Adding marker ${index + 1}:`, {
+        title: report.title,
+        location: report.location,
+        coords: coords,
+        severity: report.severity
+      });
       
       const marker = L.marker([coords.lat, coords.lng], { icon })
         .addTo(mapRef.current!)
@@ -163,8 +185,15 @@ const CrimeMap = ({ fullHeight = false }) => {
     // Fit map to show all markers if there are any
     if (markersRef.current.length > 0) {
       const group = L.featureGroup(markersRef.current);
-      mapRef.current.fitBounds(group.getBounds().pad(0.1));
+      try {
+        mapRef.current.fitBounds(group.getBounds().pad(0.1));
+      } catch (error) {
+        console.log('Could not fit bounds, using default view');
+        mapRef.current.setView([23.8103, 90.4125], 11);
+      }
     }
+
+    console.log('Total markers added:', markersRef.current.length);
   }, [mappableReports]);
 
   return (
