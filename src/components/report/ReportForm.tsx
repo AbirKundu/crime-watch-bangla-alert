@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Upload } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -135,21 +134,27 @@ export const ReportForm: React.FC = () => {
     } else if (["suspicious", "vandalism"].includes(incidentType.toLowerCase())) {
       severity = "low";
     }
+
+    // Process location - if it contains coordinates, use them as-is
+    let finalLocation = location;
+    if (useCurrentLocation && !location) {
+      finalLocation = "Current Location (Coordinates pending)";
+    }
     
     // Add the report to our context - always anonymous now
     await addReport({
       title,
-      location: useCurrentLocation ? "Current Location (Dhaka)" : location,
+      location: finalLocation,
       type: incidentType,
       description,
       severity,
-      reportedBy: 'Anonymous', // Always anonymous
+      reportedBy: 'Anonymous',
       imageUrl
     });
     
     toast({
       title: "Report Submitted",
-      description: "Thank you for your anonymous report. It will appear in the live alerts section and news page.",
+      description: "Thank you for your anonymous report with precise location data. It will appear in the live alerts section and news page.",
       variant: "default",
     });
     
@@ -172,7 +177,7 @@ export const ReportForm: React.FC = () => {
     <Card className="bg-card/70 backdrop-blur-sm border-border/50">
       <CardHeader>
         <CardTitle className="text-2xl">Anonymous Incident Report</CardTitle>
-        <CardDescription>Fill in the details about what you witnessed. All reports are submitted anonymously to protect your identity.</CardDescription>
+        <CardDescription>Fill in the details about what you witnessed. All reports are submitted anonymously with precise location data to protect your identity while providing accurate information.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">

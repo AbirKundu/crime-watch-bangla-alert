@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { LocationInput } from './LocationInput';
 
 interface FormFieldsProps {
   title: string;
@@ -68,27 +68,22 @@ export const FormFields: React.FC<FormFieldsProps> = ({
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="location">Location</Label>
-          <Input 
-            id="location" 
-            placeholder="Address or area" 
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            disabled={useCurrentLocation}
-            required={!useCurrentLocation} 
-          />
-        </div>
-        
-        <div className="space-y-2">
           <Label htmlFor="date">Date</Label>
           <Input id="date" type="date" required />
         </div>
         
-        <div className="space-y-2">
+        <div className="space-y-2 md:col-span-2">
           <Label htmlFor="time">Time</Label>
           <Input id="time" type="time" required />
         </div>
       </div>
+      
+      <LocationInput
+        location={location}
+        setLocation={setLocation}
+        useCurrentLocation={useCurrentLocation}
+        setUseCurrentLocation={setUseCurrentLocation}
+      />
       
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
@@ -100,15 +95,6 @@ export const FormFields: React.FC<FormFieldsProps> = ({
           onChange={(e) => setDescription(e.target.value)}
           required
         />
-      </div>
-      
-      <div className="flex items-center space-x-4">
-        <Switch 
-          id="use-location" 
-          checked={useCurrentLocation}
-          onCheckedChange={setUseCurrentLocation}
-        />
-        <Label htmlFor="use-location">Use my current location</Label>
       </div>
     </>
   );
