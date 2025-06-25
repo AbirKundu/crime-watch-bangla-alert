@@ -48,75 +48,15 @@ type UserContextType = {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// Sample user reports for demonstration (fallback data)
-const initialUserReports: UserReport[] = [
-  {
-    id: 201,
-    title: "Suspicious Person Near School",
-    location: "Mirpur DOHS, Dhaka",
-    time: "Just now",
-    type: "Suspicious",
-    description: "A man in dark clothing has been observing the school for over an hour.",
-    severity: "medium",
-    isUserReport: true,
-    imageUrl: crimePic1
-  },
-  {
-    id: 202,
-    title: "Attempted Break-in",
-    location: "Bashundhara R/A, Dhaka",
-    time: "5 minutes ago",
-    type: "Burglary",
-    description: "Someone tried to break into my house through the back door.",
-    severity: "high",
-    isUserReport: true,
-    imageUrl: crimePic2
-  },
-  {
-    id: 203,
-    title: "Wallet Theft at Mall",
-    location: "Jamuna Future Park, Dhaka",
-    time: "15 minutes ago",
-    type: "Theft",
-    description: "My wallet was stolen while shopping. Security has been notified.",
-    severity: "medium",
-    isUserReport: true,
-    imageUrl: crimePic3
-  }
-];
-
-// Sample official reports/alerts
-const initialOfficialReports: UserReport[] = [
-  {
-    id: 1,
-    title: "Armed Robbery at Convenience Store",
-    location: "Banani, Dhaka",
-    time: "Today, 2:30 PM",
-    type: "Robbery",
-    description: "Two armed individuals robbed a convenience store. Police are investigating. No injuries reported.",
-    severity: "high"
-  },
-  {
-    id: 2,
-    title: "Vehicle Break-in",
-    location: "Dhanmondi, Dhaka",
-    time: "Today, 11:15 AM",
-    type: "Theft",
-    description: "Multiple vehicles reported broken into with valuables stolen from inside.",
-    severity: "medium"
-  }
-];
-
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [userReports, setUserReports] = useState<UserReport[]>([]);
-  const [officialReports] = useState<UserReport[]>(initialOfficialReports);
   const [loading, setLoading] = useState(true);
 
-  // Combine both types of reports for an all-inclusive list
-  const allReports = [...userReports, ...officialReports];
+  // Only user reports are shown - no more sample data
+  const allReports = userReports;
 
   // Set up auth state listener and check for existing session
   useEffect(() => {
@@ -197,8 +137,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.log('Crime reports table error:', error.message);
-        // Fall back to initial user reports if table doesn't exist or has issues
-        setUserReports(initialUserReports);
+        // No fallback data - start with empty array
+        setUserReports([]);
         return;
       }
 
@@ -214,15 +154,16 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isUserReport: true,
         reportedBy: report.reporter_name || 'Anonymous',
         created_at: report.created_at,
-        user_id: report.user_id
+        user_id: report.user_id,
+        imageUrl: report.image_url
       }));
 
       console.log('User reports fetched:', transformedReports);
       setUserReports(transformedReports);
     } catch (error) {
       console.error('Error in fetchUserReports:', error);
-      // Fall back to initial user reports
-      setUserReports(initialUserReports);
+      // No fallback data - start with empty array
+      setUserReports([]);
     }
   };
 
