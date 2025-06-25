@@ -5,15 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Eye, EyeOff, Facebook, Loader2 } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { Eye, EyeOff, Facebook, Loader2, AlertCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/context/UserContext';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [loginError, setLoginError] = useState('');
   const { toast } = useToast();
   const navigate = useNavigate();
   const { login, isAuthenticated, loading: authLoading } = useUser();
@@ -27,13 +29,10 @@ const LoginPage = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginError('');
     
     if (!email || !password) {
-      toast({
-        title: "Missing Information",
-        description: "Please enter both email and password.",
-        variant: "destructive",
-      });
+      setLoginError("Please enter both email and password.");
       return;
     }
 
@@ -61,11 +60,7 @@ const LoginPage = () => {
         errorMessage = "Too many login attempts. Please wait a moment before trying again.";
       }
       
-      toast({
-        title: "Login Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      setLoginError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -97,6 +92,13 @@ const LoginPage = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
+            {loginError && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{loginError}</AlertDescription>
+              </Alert>
+            )}
+            
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input 
@@ -171,7 +173,7 @@ const LoginPage = () => {
                 <path fill="#EA4335" d="M5.266 9.805C5.977 7.401 8.252 5.727 10.935 5.727c1.359 0 2.582.47 3.541 1.235l2.646-2.646C15.357 2.664 13.252 2 10.935 2 6.364 2 2.489 4.94 1 8.827L5.266 9.805z"/>
                 <path fill="#34A853" d="M10.935 22c2.77 0 5.095-.919 6.791-2.487l-3.318-2.577c-.919.616-2.1.995-3.473.995-2.667 0-4.927-1.8-5.736-4.221L1 14.827C2.511 18.845 6.433 22 10.935 22z"/>
                 <path fill="#4A90E2" d="M22 11.455c0-.708-.065-1.39-.188-2.045H10.935v3.868h6.206c-.267 1.436-1.078 2.651-2.295 3.466l3.318 2.577C20.041 17.35 22 14.7 22 11.455z"/>
-                <path fill="#FBBC05" d="M1 8.827l4.239 1.107c.811-2.422 3.071-4.222 5.736-4.222 1.359 0 2.582.47 3.541 1.235l2.646-2.646C15.357 2.664 13.252 2 10.935 2 6.364 2 2.489 4.94 1 8.827z"/>
+                <path fill="#FBBC05" d="M1 8.827l4.239 1.107c-.811-2.422 3.071-4.222 5.736-4.222 1.359 0 2.582.47 3.541 1.235l2.646-2.646C15.357 2.664 13.252 2 10.935 2 6.364 2 2.489 4.94 1 8.827z"/>
               </svg>
               Google
             </Button>

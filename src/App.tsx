@@ -27,9 +27,9 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <ThemeProvider>
-        <Toaster />
-        <Sonner />
         <UserProvider>
+          <Toaster />
+          <Sonner />
           <BrowserRouter>
             <div className="flex flex-col min-h-screen">
               <NavBar />

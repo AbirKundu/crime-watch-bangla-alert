@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -205,10 +204,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (name: string, email: string, password: string) => {
     console.log('Attempting registration for:', email);
     setLoading(true);
-    
+
     try {
+      // Proceed to register the user - Supabase will handle duplicate email prevention
       const redirectUrl = `${window.location.origin}/`;
-      
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -222,17 +222,26 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Registration error:', error);
+        
+        // Check for duplicate email errors from Supabase
+        if (error.message?.toLowerCase().includes('already registered') ||
+            error.message?.toLowerCase().includes('email address is already in use') ||
+            error.message?.toLowerCase().includes('user already registered')) {
+          const duplicateError = new Error('An account with this email address already exists. Please sign in or use another email.');
+          duplicateError.name = 'DuplicateEmailError';
+          throw duplicateError;
+        }
+        
         throw error;
       }
 
-      console.log('Registration successful:', data.user?.email);
-      // The onAuthStateChange listener will handle the state updates
-    } catch (error) {
+      console.log('Registration successful for:', data.user?.email);
+    } catch (error: any) {
       setLoading(false);
       throw error;
     }
   };
-
+  
   const logout = async () => {
     console.log('Attempting logout');
     try {

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Eye, EyeOff, Facebook, Loader2 } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useUser } from '@/context/UserContext';
 
@@ -27,6 +26,8 @@ const RegisterPage = () => {
       navigate('/');
     }
   }, [isAuthenticated, authLoading, navigate]);
+
+  const isFormValid = name && email && password.length >= 6 && acceptedTerms;
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,15 +73,20 @@ const RegisterPage = () => {
     } catch (error: any) {
       console.error('Registration failed:', error);
       
-      let errorMessage = "Please try again with different information.";
+      let errorMessage = "Registration failed. Please try again.";
       
-      if (error.message?.includes('User already registered')) {
-        errorMessage = "An account with this email already exists. Please try signing in instead.";
+      if (error.name === 'DuplicateEmailError') {
+        errorMessage = error.message;
+      } else if (error.message?.toLowerCase().includes('user already registered') || 
+          error.message?.toLowerCase().includes('already been registered') ||
+          error.message?.toLowerCase().includes('email address is already in use') ||
+          error.message?.toLowerCase().includes('already registered')) {
+        errorMessage = "An account with this email address already exists. Please try signing in instead.";
       } else if (error.message?.includes('Password should be at least 6 characters')) {
         errorMessage = "Password must be at least 6 characters long.";
       } else if (error.message?.includes('Invalid email')) {
         errorMessage = "Please enter a valid email address.";
-      } else if (error.message?.includes('Signup is disabled')) {
+      } else if (error.message?.toLowerCase().includes('signup is disabled')) {
         errorMessage = "Account registration is currently disabled. Please contact support.";
       }
       
@@ -132,6 +138,7 @@ const RegisterPage = () => {
                 required 
               />
             </div>
+            
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input 
@@ -144,6 +151,7 @@ const RegisterPage = () => {
                 required 
               />
             </div>
+            
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
@@ -191,7 +199,11 @@ const RegisterPage = () => {
               </Label>
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading || !acceptedTerms}>
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={isLoading || !isFormValid}
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
