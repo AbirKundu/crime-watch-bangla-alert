@@ -77,7 +77,7 @@ const MapPage = () => {
 
   // Calculate hotspots based on actual data
   const hotspots = useMemo(() => {
-    const locationCounts = {};
+    const locationCounts: Record<string, number> = {};
     
     filteredReports.forEach(report => {
       const location = report.location;
@@ -85,11 +85,11 @@ const MapPage = () => {
     });
     
     return Object.entries(locationCounts)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([,a], [,b]) => (b as number) - (a as number))
       .slice(0, 4)
       .map(([location, count], index) => ({
         name: location,
-        count,
+        count: count as number,
         color: index === 0 ? 'border-destructive' : 
                index === 1 ? 'border-yellow-600' : 
                index === 2 ? 'border-primary' : 'border-green-600'
