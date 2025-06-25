@@ -27,7 +27,8 @@ const NewsTicker = () => {
         const tickerWidth = tickerElement.offsetWidth;
         
         tickerElement.style.animation = 'none';
-        tickerElement.style.animation = `ticker ${tickerWidth / 50}s linear infinite`;
+        // Increased duration from 30s to 50s to make it slower
+        tickerElement.style.animation = `ticker ${tickerWidth / 30}s linear infinite`;
       }
     };
 
@@ -48,7 +49,7 @@ const NewsTicker = () => {
           100% { transform: translateX(-100%); }
         }
         .news-ticker {
-          animation: ticker 30s linear infinite;
+          animation: ticker 50s linear infinite;
           display: inline-block;
         }
         `}
