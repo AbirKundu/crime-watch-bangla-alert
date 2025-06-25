@@ -1,14 +1,14 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Eye, EyeOff, Facebook, Loader2, AlertCircle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Eye, EyeOff, Facebook, Loader2 } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useUser } from '@/context/UserContext';
-import { useEmailCheck } from '@/hooks/useEmailCheck';
 
 const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -20,9 +20,6 @@ const RegisterPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { register, isAuthenticated, loading: authLoading } = useUser();
-  
-  // Use the email check hook
-  const { emailExists, isChecking } = useEmailCheck(email);
 
   // Redirect if already authenticated
   React.useEffect(() => {
@@ -31,21 +28,8 @@ const RegisterPage = () => {
     }
   }, [isAuthenticated, authLoading, navigate]);
 
-  // Only block if email definitively exists, not if check is failing
-  const isFormValid = name && email && password.length >= 6 && acceptedTerms && !emailExists;
-
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Only prevent submission if email definitively exists
-    if (emailExists) {
-      toast({
-        title: "Email Already Registered",
-        description: "This email is already registered. Please use a different email or sign in instead.",
-        variant: "destructive",
-      });
-      return;
-    }
     
     if (!name || !email || !password) {
       toast({
@@ -77,44 +61,32 @@ const RegisterPage = () => {
     setIsLoading(true);
     
     try {
-      const result = await register(name, email, password);
+      await register(name, email, password);
       
-      // Check if registration was successful
-      if (!result.error) {
-        toast({
-          title: "Registration Successful",
-          description: "Welcome to CrimeWatch Bangladesh! Please check your email to confirm your account.",
-        });
-        navigate('/');
-      } else {
-        // Handle specific registration errors
-        let errorMessage = "Registration failed. Please try again.";
-        
-        if (result.error.message?.toLowerCase().includes('user already registered') || 
-            result.error.message?.toLowerCase().includes('already been registered') ||
-            result.error.message?.toLowerCase().includes('email address is already in use') ||
-            result.error.message?.toLowerCase().includes('already registered')) {
-          errorMessage = "An account with this email address already exists. Please try signing in instead.";
-        } else if (result.error.message?.includes('Password should be at least 6 characters')) {
-          errorMessage = "Password must be at least 6 characters long.";
-        } else if (result.error.message?.includes('Invalid email')) {
-          errorMessage = "Please enter a valid email address.";
-        } else if (result.error.message?.toLowerCase().includes('signup is disabled')) {
-          errorMessage = "Account registration is currently disabled. Please contact support.";
-        }
-        
-        toast({
-          title: "Registration Failed",
-          description: errorMessage,
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Registration Successful",
+        description: "Welcome to CrimeWatch Bangladesh! Please check your email to confirm your account.",
+      });
+      
+      navigate('/');
     } catch (error: any) {
       console.error('Registration failed:', error);
       
+      let errorMessage = "Please try again with different information.";
+      
+      if (error.message?.includes('User already registered')) {
+        errorMessage = "An account with this email already exists. Please try signing in instead.";
+      } else if (error.message?.includes('Password should be at least 6 characters')) {
+        errorMessage = "Password must be at least 6 characters long.";
+      } else if (error.message?.includes('Invalid email')) {
+        errorMessage = "Please enter a valid email address.";
+      } else if (error.message?.includes('Signup is disabled')) {
+        errorMessage = "Account registration is currently disabled. Please contact support.";
+      }
+      
       toast({
         title: "Registration Failed",
-        description: "An unexpected error occurred. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -160,34 +132,18 @@ const RegisterPage = () => {
                 required 
               />
             </div>
-            
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Input 
-                  id="email" 
-                  type="email" 
-                  placeholder="name@example.com" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={isLoading}
-                  className={emailExists ? "border-red-500 focus:border-red-500 focus-visible:ring-red-500" : ""}
-                  required 
-                />
-                {isChecking && email && (
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                  </div>
-                )}
-              </div>
-              {emailExists && email && (
-                <div className="flex items-center space-x-1 text-sm text-red-600 bg-red-50 p-2 rounded border border-red-200">
-                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                  <span>This email is already registered. Please use a different email or <Link to="/login" className="underline font-medium">sign in instead</Link>.</span>
-                </div>
-              )}
+              <Input 
+                id="email" 
+                type="email" 
+                placeholder="name@example.com" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+                required 
+              />
             </div>
-            
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
@@ -235,11 +191,7 @@ const RegisterPage = () => {
               </Label>
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={isLoading || !isFormValid}
-            >
+            <Button type="submit" className="w-full" disabled={isLoading || !acceptedTerms}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

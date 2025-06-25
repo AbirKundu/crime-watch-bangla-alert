@@ -23,9 +23,8 @@ const ReportPage = () => {
   const [description, setDescription] = useState('');
   const [useCurrentLocation, setUseCurrentLocation] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     
     if (!isAuthenticated) {
@@ -40,56 +39,44 @@ const ReportPage = () => {
       
       return;
     }
-
-    setIsSubmitting(true);
     
-    try {
-      // Determine severity based on incident type
-      let severity: "low" | "medium" | "high" = "medium";
-      if (["robbery", "assault", "violence"].includes(incidentType.toLowerCase())) {
-        severity = "high";
-      } else if (["suspicious", "vandalism"].includes(incidentType.toLowerCase())) {
-        severity = "low";
-      }
-      
-      // Add the report to Supabase
-      await addReport({
-        title,
-        location: useCurrentLocation ? "Current Location (Dhaka)" : location,
-        type: incidentType,
-        description,
-        severity,
-        reportedBy: isAnonymous ? 'Anonymous' : (profile?.full_name || user?.email || 'User'),
-      });
-      
-      toast({
-        title: "Report Submitted Successfully",
-        description: "Thank you for your report. It has been saved and will appear in the live alerts section and news page.",
-        variant: "default",
-      });
-      
-      // Clear the form
-      setTitle('');
-      setIncidentType('');
-      setLocation('');
-      setDescription('');
-      setUseCurrentLocation(false);
-      setIsAnonymous(false);
-      
-      // Redirect to news page to see the report
-      setTimeout(() => {
-        navigate('/news');
-      }, 2000);
-    } catch (error) {
-      console.error('Error submitting report:', error);
-      toast({
-        title: "Submission Failed",
-        description: "There was an error submitting your report. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
+    // Determine severity based on incident type
+    let severity: "low" | "medium" | "high" = "medium";
+    if (["robbery", "assault", "violence"].includes(incidentType.toLowerCase())) {
+      severity = "high";
+    } else if (["suspicious", "vandalism"].includes(incidentType.toLowerCase())) {
+      severity = "low";
     }
+    
+    // Add the report to our context - now explicitly passing isUserReport as true
+    addReport({
+      title,
+      location: useCurrentLocation ? "Current Location (Dhaka)" : location,
+      type: incidentType,
+      description,
+      severity,
+      reportedBy: isAnonymous ? 'Anonymous' : (profile?.full_name || user?.email || 'User'),
+      // Note: isUserReport is now handled internally in the addReport function
+    });
+    
+    toast({
+      title: "Report Submitted",
+      description: "Thank you for your report. It will appear in the live alerts section and news page.",
+      variant: "default",
+    });
+    
+    // Clear the form
+    setTitle('');
+    setIncidentType('');
+    setLocation('');
+    setDescription('');
+    setUseCurrentLocation(false);
+    setIsAnonymous(false);
+    
+    // Redirect to news page to see the report
+    setTimeout(() => {
+      navigate('/news');
+    }, 2000);
   };
 
   return (
@@ -200,13 +187,8 @@ const ReportPage = () => {
                   <Label htmlFor="anonymous">Submit anonymously</Label>
                 </div>
                 
-                <Button 
-                  type="submit" 
-                  size="lg" 
-                  className="w-full" 
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'Submitting...' : 'Submit Report'}
+                <Button type="submit" size="lg" className="w-full">
+                  Submit Report
                 </Button>
               </form>
             </CardContent>

@@ -29,20 +29,16 @@ type UserProfile = {
   updated_at: string;
 };
 
-type AuthResult = {
-  error?: any;
-};
-
 type UserContextType = {
   isAuthenticated: boolean;
   user: User | null;
   profile: UserProfile | null;
   session: Session | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<AuthResult>;
+  register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   userReports: UserReport[];
-  addReport: (report: Omit<UserReport, 'id' | 'time'>) => Promise<void>;
+  addReport: (report: Omit<UserReport, 'id' | 'time'>) => void;
   allReports: UserReport[];
   loading: boolean;
 };
@@ -206,14 +202,13 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (name: string, email: string, password: string): Promise<AuthResult> => {
+  const register = async (name: string, email: string, password: string) => {
     console.log('Attempting registration for:', email);
     setLoading(true);
-
+    
     try {
-      // Proceed to register the user - Supabase will handle duplicate email prevention
       const redirectUrl = `${window.location.origin}/`;
-
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -227,27 +222,17 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Registration error:', error);
-        
-        // Check for duplicate email errors from Supabase
-        if (error.message?.toLowerCase().includes('already registered') ||
-            error.message?.toLowerCase().includes('email address is already in use') ||
-            error.message?.toLowerCase().includes('user already registered')) {
-          const duplicateError = new Error('An account with this email address already exists. Please sign in or use another email.');
-          duplicateError.name = 'DuplicateEmailError';
-          return { error: duplicateError };
-        }
-        
-        return { error };
+        throw error;
       }
 
-      console.log('Registration successful for:', data.user?.email);
-      return {};
-    } catch (error: any) {
+      console.log('Registration successful:', data.user?.email);
+      // The onAuthStateChange listener will handle the state updates
+    } catch (error) {
       setLoading(false);
-      return { error };
+      throw error;
     }
   };
-  
+
   const logout = async () => {
     console.log('Attempting logout');
     try {
@@ -263,57 +248,16 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const addReport = async (report: Omit<UserReport, 'id' | 'time'>) => {
-    if (!user) {
-      console.error('User must be authenticated to add report');
-      return;
-    }
-
-    try {
-      // Extract date and time from current time for database
-      const now = new Date();
-      const reportDate = now.toISOString().split('T')[0]; // YYYY-MM-DD format
-      const reportTime = now.toTimeString().split(' ')[0]; // HH:MM:SS format
-
-      const { data, error } = await supabase
-        .from('crime_reports')
-        .insert({
-          user_id: user.id,
-          title: report.title,
-          incident_type: report.type,
-          location: report.location,
-          description: report.description,
-          severity: report.severity,
-          report_date: reportDate,
-          report_time: reportTime,
-          is_anonymous: report.reportedBy === 'Anonymous',
-          reported_by: report.reportedBy,
-          image_url: report.imageUrl,
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error saving report to database:', error);
-        throw error;
-      }
-
-      console.log('Report saved to database:', data);
-
-      // Also add to local state for immediate UI update
-      const newReport: UserReport = {
-        ...report,
-        id: Date.now(), // Use timestamp as fallback ID for UI
-        time: "Just now",
-        isUserReport: true,
-        reportedBy: report.reportedBy || profile?.full_name || user?.email || 'Anonymous',
-      };
-      
-      setUserReports(prevReports => [newReport, ...prevReports]);
-    } catch (error) {
-      console.error('Error in addReport:', error);
-      throw error;
-    }
+  const addReport = (report: Omit<UserReport, 'id' | 'time'>) => {
+    const newReport: UserReport = {
+      ...report,
+      id: Date.now(), // Generate a unique ID
+      time: "Just now", // Current time
+      isUserReport: true, // Always mark as user report
+      reportedBy: profile?.full_name || user?.email || 'Anonymous',
+    };
+    
+    setUserReports(prevReports => [newReport, ...prevReports]);
   };
 
   const isAuthenticated = !!user;
