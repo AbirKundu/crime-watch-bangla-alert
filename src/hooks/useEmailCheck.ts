@@ -11,28 +11,23 @@ export const useEmailCheck = () => {
     setError(null);
 
     try {
-      // Use Supabase auth API to check if user exists
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password: 'dummy-password-for-check', // This won't actually create an account
-      });
+      // Check if email exists in the registered_emails table
+      const { data, error } = await supabase
+        .from('registered_emails')
+        .select('email')
+        .eq('email', email.toLowerCase().trim())
+        .maybeSingle();
 
       if (error) {
-        // If error is about user already registered, return true
-        if (error.message?.toLowerCase().includes('already registered') ||
-            error.message?.toLowerCase().includes('email address is already in use') ||
-            error.message?.toLowerCase().includes('user already registered')) {
-          return true;
-        }
-        
-        // For other errors, set error state
-        setError(error.message);
+        console.error('Error checking email:', error);
+        setError('Failed to validate email availability');
         return false;
       }
 
-      // If no error, email doesn't exist yet
-      return false;
+      // If data exists, email is already registered
+      return !!data;
     } catch (err: any) {
+      console.error('Error in checkEmailExists:', err);
       setError(err.message || 'Failed to check email');
       return false;
     } finally {

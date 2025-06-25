@@ -1,13 +1,15 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Eye, EyeOff, Facebook, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Facebook, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useUser } from '@/context/UserContext';
+import { useEmailCheck } from '@/hooks/useEmailCheck';
 
 const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -16,9 +18,13 @@ const RegisterPage = () => {
   const [password, setPassword] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [emailValidated, setEmailValidated] = useState(false);
+  const [emailValidationMessage, setEmailValidationMessage] = useState<string | null>(null);
+  
   const { toast } = useToast();
   const navigate = useNavigate();
   const { register, isAuthenticated, loading: authLoading } = useUser();
+  const { validateEmailAvailability, isChecking: isCheckingEmail } = useEmailCheck();
 
   // Redirect if already authenticated
   React.useEffect(() => {
@@ -27,7 +33,44 @@ const RegisterPage = () => {
     }
   }, [isAuthenticated, authLoading, navigate]);
 
-  const isFormValid = name && email && password.length >= 6 && acceptedTerms;
+  const handleEmailValidation = async (emailValue: string) => {
+    if (!emailValue || !emailValue.includes('@')) {
+      setEmailValidated(false);
+      setEmailValidationMessage(null);
+      return;
+    }
+
+    const result = await validateEmailAvailability(emailValue);
+    
+    if (result.error) {
+      setEmailValidated(false);
+      setEmailValidationMessage('Unable to validate email availability');
+    } else if (result.exists) {
+      setEmailValidated(false);
+      setEmailValidationMessage('This email is already registered. Please use a different email or sign in.');
+    } else {
+      setEmailValidated(true);
+      setEmailValidationMessage('Email is available');
+    }
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const emailValue = e.target.value;
+    setEmail(emailValue);
+    
+    // Reset validation state
+    setEmailValidated(false);
+    setEmailValidationMessage(null);
+    
+    // Debounce email validation
+    const timeoutId = setTimeout(() => {
+      handleEmailValidation(emailValue);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  };
+
+  const isFormValid = name && email && password.length >= 6 && acceptedTerms && emailValidated;
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +97,15 @@ const RegisterPage = () => {
       toast({
         title: "Password Too Short",
         description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!emailValidated) {
+      toast({
+        title: "Email Validation Required",
+        description: "Please ensure your email is available before registering.",
         variant: "destructive",
       });
       return;
@@ -141,15 +193,34 @@ const RegisterPage = () => {
             
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="name@example.com" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
-                required 
-              />
+              <div className="relative">
+                <Input 
+                  id="email" 
+                  type="email" 
+                  placeholder="name@example.com" 
+                  value={email}
+                  onChange={handleEmailChange}
+                  disabled={isLoading}
+                  required 
+                />
+                {isCheckingEmail && (
+                  <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-muted-foreground" />
+                )}
+                {!isCheckingEmail && email && email.includes('@') && (
+                  <div className="absolute right-3 top-3">
+                    {emailValidated ? (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : emailValidationMessage ? (
+                      <AlertCircle className="h-4 w-4 text-red-500" />
+                    ) : null}
+                  </div>
+                )}
+              </div>
+              {emailValidationMessage && (
+                <p className={`text-xs ${emailValidated ? 'text-green-600' : 'text-red-600'}`}>
+                  {emailValidationMessage}
+                </p>
+              )}
             </div>
             
             <div className="space-y-2">
