@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,6 +20,8 @@ export type UserReport = {
   imageUrl?: string;
   isUserReport?: boolean;
   reportedBy?: string;
+  created_at?: string;
+  user_id?: string;
 };
 
 type UserProfile = {
@@ -37,14 +40,15 @@ type UserContextType = {
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   userReports: UserReport[];
-  addReport: (report: Omit<UserReport, 'id' | 'time'>) => void;
+  addReport: (report: Omit<UserReport, 'id' | 'time' | 'created_at' | 'user_id'>) => Promise<void>;
   allReports: UserReport[];
   loading: boolean;
+  refreshReports: () => Promise<void>;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// Sample user reports for demonstration
+// Sample user reports for demonstration (fallback data)
 const initialUserReports: UserReport[] = [
   {
     id: 201,
@@ -107,7 +111,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [userReports, setUserReports] = useState<UserReport[]>(initialUserReports);
+  const [userReports, setUserReports] = useState<UserReport[]>([]);
   const [officialReports] = useState<UserReport[]>(initialOfficialReports);
   const [loading, setLoading] = useState(true);
 
@@ -126,12 +130,14 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch user profile when signed in
+          // Fetch user profile and reports when signed in
           setTimeout(() => {
             fetchUserProfile(session.user.id);
+            fetchUserReports(session.user.id);
           }, 0);
         } else {
           setProfile(null);
+          setUserReports([]);
         }
         
         setLoading(false);
@@ -146,6 +152,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (session?.user) {
         fetchUserProfile(session.user.id);
+        fetchUserReports(session.user.id);
       }
       
       setLoading(false);
@@ -178,6 +185,65 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const fetchUserReports = async (userId: string) => {
+    try {
+      console.log('Fetching reports for user:', userId);
+      
+      // Check if crime_reports table exists by attempting to query it
+      const { data, error } = await supabase
+        .from('crime_reports')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.log('Crime reports table not found or error:', error.message);
+        // Fall back to initial user reports if table doesn't exist
+        setUserReports(initialUserReports);
+        return;
+      }
+
+      // Transform database data to match our UserReport type
+      const transformedReports: UserReport[] = data.map(report => ({
+        id: parseInt(report.id) || Date.now(), // Convert UUID to number or use timestamp
+        title: report.title,
+        location: report.location,
+        time: formatTimeAgo(report.created_at),
+        type: report.incident_type,
+        description: report.description,
+        severity: report.severity as "low" | "medium" | "high",
+        isUserReport: true,
+        reportedBy: report.reporter_name || 'Anonymous',
+        created_at: report.created_at,
+        user_id: report.user_id
+      }));
+
+      console.log('User reports fetched:', transformedReports);
+      setUserReports(transformedReports);
+    } catch (error) {
+      console.error('Error in fetchUserReports:', error);
+      // Fall back to initial user reports
+      setUserReports(initialUserReports);
+    }
+  };
+
+  const formatTimeAgo = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+
+    if (diffInMinutes < 1) return "Just now";
+    if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} hours ago`;
+    return date.toLocaleDateString();
+  };
+
+  const refreshReports = async () => {
+    if (user?.id) {
+      await fetchUserReports(user.id);
+    }
+  };
+
   const login = async (email: string, password: string) => {
     console.log('Attempting login for:', email);
     setLoading(true);
@@ -206,7 +272,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
 
     try {
-      // Proceed to register the user - Supabase will handle duplicate email prevention
       const redirectUrl = `${window.location.origin}/`;
 
       const { data, error } = await supabase.auth.signUp({
@@ -223,7 +288,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) {
         console.error('Registration error:', error);
         
-        // Check for duplicate email errors from Supabase
         if (error.message?.toLowerCase().includes('already registered') ||
             error.message?.toLowerCase().includes('email address is already in use') ||
             error.message?.toLowerCase().includes('user already registered')) {
@@ -257,16 +321,59 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const addReport = (report: Omit<UserReport, 'id' | 'time'>) => {
-    const newReport: UserReport = {
-      ...report,
-      id: Date.now(), // Generate a unique ID
-      time: "Just now", // Current time
-      isUserReport: true, // Always mark as user report
-      reportedBy: profile?.full_name || user?.email || 'Anonymous',
-    };
-    
-    setUserReports(prevReports => [newReport, ...prevReports]);
+  const addReport = async (report: Omit<UserReport, 'id' | 'time' | 'created_at' | 'user_id'>) => {
+    if (!user?.id) {
+      throw new Error('User must be logged in to submit reports');
+    }
+
+    try {
+      // Try to save to database first
+      const { data, error } = await supabase
+        .from('crime_reports')
+        .insert([
+          {
+            user_id: user.id,
+            title: report.title,
+            location: report.location,
+            incident_type: report.type,
+            description: report.description,
+            severity: report.severity,
+            reporter_name: report.reportedBy || profile?.full_name || user?.email || 'Anonymous'
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error saving to database:', error);
+        // Fall back to local storage
+        const newReport: UserReport = {
+          ...report,
+          id: Date.now(),
+          time: "Just now",
+          isUserReport: true,
+          reportedBy: report.reportedBy || profile?.full_name || user?.email || 'Anonymous',
+        };
+        setUserReports(prevReports => [newReport, ...prevReports]);
+        return;
+      }
+
+      console.log('Report saved successfully:', data);
+      // Refresh reports from database
+      await fetchUserReports(user.id);
+
+    } catch (error) {
+      console.error('Error in addReport:', error);
+      // Fall back to local storage
+      const newReport: UserReport = {
+        ...report,
+        id: Date.now(),
+        time: "Just now",
+        isUserReport: true,
+        reportedBy: report.reportedBy || profile?.full_name || user?.email || 'Anonymous',
+      };
+      setUserReports(prevReports => [newReport, ...prevReports]);
+    }
   };
 
   const isAuthenticated = !!user;
@@ -284,6 +391,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       addReport,
       allReports,
       loading,
+      refreshReports,
     }}>
       {children}
     </UserContext.Provider>
