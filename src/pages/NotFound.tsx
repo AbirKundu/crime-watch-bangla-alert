@@ -1,12 +1,13 @@
 
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Home, ArrowLeft } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.error(
@@ -14,6 +15,16 @@ const NotFound = () => {
       location.pathname
     );
   }, [location.pathname]);
+
+  const handleGoBack = () => {
+    // Check if there's history to go back to
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      // If no history, go to home
+      navigate('/');
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -33,11 +44,9 @@ const NotFound = () => {
               Go Home
             </Link>
           </Button>
-          <Button asChild variant="outline" onClick={() => window.history.back()}>
-            <span className="cursor-pointer">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Go Back
-            </span>
+          <Button variant="outline" onClick={handleGoBack}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Go Back
           </Button>
         </div>
       </div>

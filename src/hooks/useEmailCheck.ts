@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -15,21 +16,28 @@ export const useEmailCheck = (email: string) => {
     const checkEmail = async () => {
       setIsChecking(true);
 
-      const { data, error } = await supabase
-        .from('public_users_table') // this must be created + populated via sync
-        .select('id')
-        .eq('email', email)
-        .maybeSingle();
+      try {
+        const { data, error } = await supabase
+          .from('public_users_table')
+          .select('id')
+          .eq('email', email)
+          .maybeSingle();
 
-      setIsChecking(false);
+        if (error) {
+          console.log('Email check failed (table may not exist):', error.message);
+          // Don't block registration if the table doesn't exist
+          setEmailExists(false);
+          setIsChecking(false);
+          return;
+        }
 
-      if (error) {
-        console.error('Email check error:', error.message);
-        setEmailExists(false); // fallback: treat as non-existent
-        return;
+        setEmailExists(!!data);
+      } catch (error) {
+        console.log('Email check error:', error);
+        setEmailExists(false);
       }
-
-      setEmailExists(!!data);
+      
+      setIsChecking(false);
     };
 
     // Debounce to avoid hammering the DB on every keystroke

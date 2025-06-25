@@ -31,16 +31,17 @@ const RegisterPage = () => {
     }
   }, [isAuthenticated, authLoading, navigate]);
 
-  const isFormValid = name && email && password.length >= 6 && acceptedTerms && !emailExists && !isChecking;
+  // Only block if email definitively exists, not if check is failing
+  const isFormValid = name && email && password.length >= 6 && acceptedTerms && !emailExists;
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Prevent submission if email exists or is being checked
-    if (emailExists || isChecking) {
+    // Only prevent submission if email definitively exists
+    if (emailExists) {
       toast({
-        title: "Email Issue",
-        description: emailExists ? "This email is already registered. Please use a different email." : "Please wait while we verify your email.",
+        title: "Email Already Registered",
+        description: "This email is already registered. Please use a different email or sign in instead.",
         variant: "destructive",
       });
       return;
@@ -78,14 +79,14 @@ const RegisterPage = () => {
     try {
       const result = await register(name, email, password);
       
-      // Only show success if registration actually succeeded
-      if (result && !result.error) {
+      // Check if registration was successful
+      if (!result.error) {
         toast({
           title: "Registration Successful",
           description: "Welcome to CrimeWatch Bangladesh! Please check your email to confirm your account.",
         });
         navigate('/');
-      } else if (result && result.error) {
+      } else {
         // Handle specific registration errors
         let errorMessage = "Registration failed. Please try again.";
         
@@ -111,22 +112,9 @@ const RegisterPage = () => {
     } catch (error: any) {
       console.error('Registration failed:', error);
       
-      let errorMessage = "Registration failed. Please try again.";
-      
-      if (error.message?.toLowerCase().includes('user already registered') || 
-          error.message?.toLowerCase().includes('already been registered') ||
-          error.message?.toLowerCase().includes('email address is already in use') ||
-          error.message?.toLowerCase().includes('already registered')) {
-        errorMessage = "An account with this email address already exists. Please try signing in instead.";
-      } else if (error.message?.includes('Password should be at least 6 characters')) {
-        errorMessage = "Password must be at least 6 characters long.";
-      } else if (error.message?.includes('Invalid email')) {
-        errorMessage = "Please enter a valid email address.";
-      }
-      
       toast({
         title: "Registration Failed",
-        description: errorMessage,
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
     } finally {
