@@ -1,13 +1,15 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Eye, EyeOff, Facebook, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Facebook, Loader2, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useUser } from '@/context/UserContext';
+import { useEmailCheck } from '@/hooks/useEmailCheck';
 
 const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -19,6 +21,9 @@ const RegisterPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { register, isAuthenticated, loading: authLoading } = useUser();
+  
+  // Use the email check hook
+  const { emailExists, isChecking } = useEmailCheck(email);
 
   // Redirect if already authenticated
   React.useEffect(() => {
@@ -27,7 +32,7 @@ const RegisterPage = () => {
     }
   }, [isAuthenticated, authLoading, navigate]);
 
-  const isFormValid = name && email && password.length >= 6 && acceptedTerms;
+  const isFormValid = name && email && password.length >= 6 && acceptedTerms && !emailExists;
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +41,15 @@ const RegisterPage = () => {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (emailExists) {
+      toast({
+        title: "Email Already Exists",
+        description: "An account with this email address already exists. Please use a different email or sign in instead.",
         variant: "destructive",
       });
       return;
@@ -141,15 +155,29 @@ const RegisterPage = () => {
             
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="name@example.com" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
-                required 
-              />
+              <div className="relative">
+                <Input 
+                  id="email" 
+                  type="email" 
+                  placeholder="name@example.com" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
+                  className={emailExists ? "border-red-500 focus:border-red-500" : ""}
+                  required 
+                />
+                {isChecking && email && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+              {emailExists && email && (
+                <div className="flex items-center space-x-1 text-sm text-red-600">
+                  <AlertCircle className="h-4 w-4" />
+                  <span>This email is already registered. Please use a different email.</span>
+                </div>
+              )}
             </div>
             
             <div className="space-y-2">
