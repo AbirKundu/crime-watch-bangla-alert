@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { MapPin, AlertTriangle, Shield, Activity } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
@@ -160,7 +159,7 @@ const CrimeMap = ({ fullHeight = false }) => {
 
     // Fit map to show all markers if there are any
     if (markersRef.current.length > 0) {
-      const group = new L.featureGroup(markersRef.current);
+      const group = L.featureGroup(markersRef.current);
       mapRef.current.fitBounds(group.getBounds().pad(0.1));
     }
   }, [allReports]);
