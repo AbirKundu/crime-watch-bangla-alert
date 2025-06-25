@@ -10,7 +10,7 @@ import { useUser } from '@/context/UserContext';
 
 const NewsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const { userReports, allReports } = useUser();
+  const { userReports } = useUser();
 
   // Convert UserReport type to CrimeIncident type for the CrimeCard component
   const userReportsAsIncidents: CrimeIncident[] = userReports.map(report => ({
@@ -18,11 +18,8 @@ const NewsPage = () => {
     // Add any missing fields if needed
   }));
 
-  // Use all reports instead of just user reports - accessible to everyone now
-  const allIncidents = allReports.map(report => ({
-    ...report,
-    // Add any missing fields if needed
-  }));
+  // Only user reports are shown now - no more sample data
+  const allIncidents = userReportsAsIncidents;
 
   const filterIncidents = (incidents: CrimeIncident[], term: string) => {
     if (!term) return incidents;
@@ -52,7 +49,7 @@ const NewsPage = () => {
         <div>
           <h1 className="text-3xl font-bold mb-2">News & Alerts</h1>
           <p className="text-muted-foreground">
-            Crime reports and alerts from across Bangladesh
+            Crime reports submitted by community members across Bangladesh
           </p>
         </div>
         
@@ -93,8 +90,8 @@ const NewsPage = () => {
                 <MessageCircle className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-xl font-semibold mb-2">No reports found</h3>
                 <p className="text-muted-foreground">
-                  {allReports.length === 0 
-                    ? "No reports have been submitted yet." 
+                  {userReports.length === 0 
+                    ? "No reports have been submitted yet. Be the first to report an incident!" 
                     : "Try adjusting your search terms"}
                 </p>
               </div>
@@ -114,7 +111,7 @@ const NewsPage = () => {
                 <h3 className="text-xl font-semibold mb-2">No user reports found</h3>
                 <p className="text-muted-foreground">
                   {userReports.length === 0 
-                    ? "No user reports have been submitted yet." 
+                    ? "No reports have been submitted yet. Be the first to report an incident!" 
                     : "Try adjusting your search terms"}
                 </p>
               </div>
