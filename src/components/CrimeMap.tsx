@@ -108,8 +108,8 @@ const CrimeMap = ({ fullHeight = false }) => {
         })}
       </div>
       
-      {/* Map legend */}
-      <div className="absolute top-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
+      {/* Map legend - moved to left middle */}
+      <div className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-background/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
         <h3 className="text-sm font-semibold mb-2">Incident Severity</h3>
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-xs">
