@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Upload, X } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/context/UserContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const ReportPage = () => {
   const { toast } = useToast();
@@ -23,8 +24,92 @@ const ReportPage = () => {
   const [description, setDescription] = useState('');
   const [useCurrentLocation, setUseCurrentLocation] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Check file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please select an image smaller than 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid file type",
+          description: "Please select an image file.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setSelectedFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  
+  const removeSelectedFile = () => {
+    setSelectedFile(null);
+    setImagePreview(null);
+    const fileInput = document.getElementById('photo') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+  };
+  
+  const uploadImage = async (file: File): Promise<string | null> => {
+    if (!user?.id) return null;
+    
+    setUploading(true);
+    try {
+      const fileName = `${user.id}/${Date.now()}_${file.name}`;
+      
+      const { data, error } = await supabase.storage
+        .from('crime-images')
+        .upload(fileName, file);
+      
+      if (error) {
+        console.error('Upload error:', error);
+        toast({
+          title: "Upload failed",
+          description: "Failed to upload image. Please try again.",
+          variant: "destructive",
+        });
+        return null;
+      }
+      
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('crime-images')
+        .getPublicUrl(fileName);
+      
+      return publicUrl;
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload image. Please try again.",
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+  
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     
     if (!isAuthenticated) {
@@ -40,6 +125,13 @@ const ReportPage = () => {
       return;
     }
     
+    let imageUrl: string | undefined;
+    
+    // Upload image if selected
+    if (selectedFile) {
+      imageUrl = await uploadImage(selectedFile) || undefined;
+    }
+    
     // Determine severity based on incident type
     let severity: "low" | "medium" | "high" = "medium";
     if (["robbery", "assault", "violence"].includes(incidentType.toLowerCase())) {
@@ -48,15 +140,15 @@ const ReportPage = () => {
       severity = "low";
     }
     
-    // Add the report to our context - now explicitly passing isUserReport as true
-    addReport({
+    // Add the report to our context
+    await addReport({
       title,
       location: useCurrentLocation ? "Current Location (Dhaka)" : location,
       type: incidentType,
       description,
       severity,
       reportedBy: isAnonymous ? 'Anonymous' : (profile?.full_name || user?.email || 'User'),
-      // Note: isUserReport is now handled internally in the addReport function
+      imageUrl
     });
     
     toast({
@@ -72,6 +164,8 @@ const ReportPage = () => {
     setDescription('');
     setUseCurrentLocation(false);
     setIsAnonymous(false);
+    setSelectedFile(null);
+    setImagePreview(null);
     
     // Redirect to news page to see the report
     setTimeout(() => {
@@ -166,7 +260,40 @@ const ReportPage = () => {
                 
                 <div className="space-y-2">
                   <Label htmlFor="photo">Upload Photo/Video (Optional)</Label>
-                  <Input id="photo" type="file" accept="image/*,video/*" className="cursor-pointer" />
+                  <div className="space-y-3">
+                    <Input 
+                      id="photo" 
+                      type="file" 
+                      accept="image/*"
+                      onChange={handleFileSelect}
+                      className="cursor-pointer" 
+                    />
+                    
+                    {imagePreview && (
+                      <div className="relative inline-block">
+                        <img 
+                          src={imagePreview} 
+                          alt="Preview" 
+                          className="max-w-xs max-h-48 rounded-lg border"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                          onClick={removeSelectedFile}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
+                    
+                    {selectedFile && (
+                      <p className="text-sm text-muted-foreground">
+                        Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                      </p>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="flex items-center space-x-4">
@@ -187,8 +314,15 @@ const ReportPage = () => {
                   <Label htmlFor="anonymous">Submit anonymously</Label>
                 </div>
                 
-                <Button type="submit" size="lg" className="w-full">
-                  Submit Report
+                <Button type="submit" size="lg" className="w-full" disabled={uploading}>
+                  {uploading ? (
+                    <>
+                      <Upload className="mr-2 h-4 w-4 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    'Submit Report'
+                  )}
                 </Button>
               </form>
             </CardContent>

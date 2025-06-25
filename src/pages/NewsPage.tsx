@@ -8,19 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import CrimeCard, { CrimeIncident } from '@/components/CrimeCard';
 import { useUser, UserReport } from '@/context/UserContext';
 
-// Move image imports to the top level of the file
-import crimePic1 from '../components/picture/crimePic1.jpg';
-import crimePic2 from '../components/picture/crimePic2.jpg';
-import crimePic3 from '../components/picture/crimePic3.jpg';
-import crimePic4 from '../components/picture/crimePic4.jpg';
-import crimePic5 from '../components/picture/crimePic5.jpg';
-import crimePic6 from '../components/picture/crimePic6.jpg';
-
 const NewsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const { userReports } = useUser();
 
-  // Sample news data
+  // Sample news data - removed placeholder images
   const allIncidents: CrimeIncident[] = [
     {
       id: 1,
@@ -29,8 +21,7 @@ const NewsPage = () => {
       time: "Today, 2:30 PM",
       type: "Robbery",
       description: "Two armed individuals robbed a convenience store. Police are investigating. No injuries reported.",
-      severity: "high",
-      imageUrl: crimePic1
+      severity: "high"
     },
     {
       id: 2,
@@ -39,8 +30,7 @@ const NewsPage = () => {
       time: "Today, 11:15 AM",
       type: "Theft",
       description: "Multiple vehicles reported broken into with valuables stolen from inside.",
-      severity: "medium",
-      imageUrl: crimePic2
+      severity: "medium"
     },
     {
       id: 3,
@@ -49,8 +39,7 @@ const NewsPage = () => {
       time: "Yesterday, 9:45 PM",
       type: "Suspicious",
       description: "Residents reported suspicious individuals surveilling residences in the area.",
-      severity: "low",
-      imageUrl: crimePic3
+      severity: "low"
     },
     {
       id: 4,
@@ -59,8 +48,7 @@ const NewsPage = () => {
       time: "Yesterday, 6:20 PM",
       type: "Theft",
       description: "A person's phone was snatched while they were walking. Suspects fled on a motorcycle.",
-      severity: "medium",
-      imageUrl: crimePic4
+      severity: "medium"
     },
     {
       id: 5,
@@ -69,8 +57,7 @@ const NewsPage = () => {
       time: "2 days ago, 3:15 AM",
       type: "Burglary",
       description: "A residence was broken into while occupants were sleeping. Electronics and jewelry stolen.",
-      severity: "high",
-      imageUrl: crimePic5
+      severity: "high"
     },
     {
       id: 6,
@@ -79,12 +66,11 @@ const NewsPage = () => {
       time: "2 days ago, 10:40 AM",
       type: "Fraud",
       description: "Multiple residents reporting unauthorized transactions. Local bank investigating.",
-      severity: "medium",
-      imageUrl: crimePic6
+      severity: "medium"
     },
   ];
 
-  // Government updates
+  // Government updates - removed placeholder images
   const governmentUpdates: CrimeIncident[] = [
     {
       id: 101,
@@ -93,8 +79,7 @@ const NewsPage = () => {
       time: "Today, 9:00 AM",
       type: "Police",
       description: "Due to recent incidents, police have increased patrol frequency in Gulshan residential areas.",
-      severity: "low",
-      imageUrl: crimePic2
+      severity: "low"
     },
     {
       id: 102,
@@ -103,8 +88,7 @@ const NewsPage = () => {
       time: "Yesterday, 11:00 AM",
       type: "Traffic",
       description: "Authorities announce new traffic control measures to reduce congestion and improve safety.",
-      severity: "low",
-      imageUrl: crimePic3
+      severity: "low"
     },
     {
       id: 103,
@@ -113,8 +97,7 @@ const NewsPage = () => {
       time: "3 days ago, 2:30 PM",
       type: "Government",
       description: "Government launches new initiative to combat corruption in public services.",
-      severity: "medium",
-      imageUrl: crimePic1
+      severity: "medium"
     },
     {
       id: 104,
@@ -123,8 +106,7 @@ const NewsPage = () => {
       time: "4 days ago, 10:15 AM",
       type: "Security",
       description: "Government issues advisory on protecting personal data from increasing cyber threats.",
-      severity: "medium",
-      imageUrl: crimePic4
+      severity: "medium"
     },
     {
       id: 105,
@@ -133,8 +115,7 @@ const NewsPage = () => {
       time: "1 week ago, 9:30 AM",
       type: "Training",
       description: "New program launched to train civilians on emergency response procedures.",
-      severity: "low",
-      imageUrl: crimePic5
+      severity: "low"
     },
     {
       id: 106,
@@ -143,8 +124,7 @@ const NewsPage = () => {
       time: "1 week ago, 3:45 PM",
       type: "Infrastructure",
       description: "City authorities announce plans to install additional CCTV cameras and emergency call boxes.",
-      severity: "low",
-      imageUrl: crimePic6
+      severity: "low"
     },
   ];
 
@@ -241,7 +221,7 @@ const NewsPage = () => {
             {filterIncidents(userReportsAsIncidents, searchTerm).length === 0 && (
               <div className="text-center py-12">
                 <MessageCircle className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-xl font-semibold mb-2">No user reports found</h3>
+                <h3 className="text-xl font-semibent mb-2">No user reports found</h3>
                 <p className="text-muted-foreground">Be the first to report an incident!</p>
               </div>
             )}

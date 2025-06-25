@@ -337,7 +337,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
             incident_type: report.type,
             description: report.description,
             severity: report.severity,
-            reporter_name: report.reportedBy || profile?.full_name || user?.email || 'Anonymous'
+            reporter_name: report.reportedBy || profile?.full_name || user?.email || 'Anonymous',
+            image_url: report.imageUrl // Add image URL to database insert
           }
         ])
         .select()

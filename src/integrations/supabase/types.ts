@@ -14,6 +14,7 @@ export type Database = {
           created_at: string
           description: string
           id: string
+          image_url: string | null
           incident_type: string
           location: string
           reporter_name: string | null
@@ -26,6 +27,7 @@ export type Database = {
           created_at?: string
           description: string
           id?: string
+          image_url?: string | null
           incident_type: string
           location: string
           reporter_name?: string | null
@@ -38,6 +40,7 @@ export type Database = {
           created_at?: string
           description?: string
           id?: string
+          image_url?: string | null
           incident_type?: string
           location?: string
           reporter_name?: string | null
