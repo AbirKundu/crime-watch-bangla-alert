@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { MapPin, AlertTriangle, Shield, Activity, LogIn, UserPlus } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
@@ -7,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import 'leaflet.dist/leaflet.css';
 
 // Fix for default markers in Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -205,23 +204,6 @@ const CrimeMap = ({ fullHeight = false }) => {
                       Create Account
                     </Link>
                   </Button>
-                </div>
-                
-                <div className="pt-4 border-t">
-                  <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                      <span>High Risk</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                      <span>Medium Risk</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span>Low Risk</span>
-                    </div>
-                  </div>
                 </div>
               </div>
             </CardContent>
