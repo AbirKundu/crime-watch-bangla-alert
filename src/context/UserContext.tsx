@@ -31,27 +31,6 @@ type UserProfile = {
   updated_at: string;
 };
 
-// Database types (temporary until Supabase types are updated)
-type DatabaseReport = {
-  id: string;
-  user_id: string;
-  title: string;
-  location: string;
-  incident_type: string;
-  description: string;
-  severity: 'low' | 'medium' | 'high';
-  reporter_name: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
-type DatabaseProfile = {
-  id: string;
-  full_name: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
 type UserContextType = {
   isAuthenticated: boolean;
   user: User | null;
@@ -188,8 +167,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchUserProfile = async (userId: string) => {
     try {
       console.log('Fetching profile for user:', userId);
-      // Use type assertion to handle the case where types aren't updated yet
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
@@ -201,7 +179,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       console.log('Profile fetched:', data);
-      setProfile(data as DatabaseProfile);
+      setProfile(data);
     } catch (error) {
       console.error('Error in fetchUserProfile:', error);
     }
@@ -211,8 +189,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('Fetching reports for user:', userId);
       
-      // Use type assertion to handle the case where types aren't updated yet
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('crime_reports')
         .select('*')
         .eq('user_id', userId)
@@ -226,7 +203,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // Transform database data to match our UserReport type
-      const transformedReports: UserReport[] = (data as DatabaseReport[]).map(report => ({
+      const transformedReports: UserReport[] = (data || []).map(report => ({
         id: parseInt(report.id.substring(0, 8), 16) || Date.now(), // Convert UUID to number
         title: report.title,
         location: report.location,
@@ -349,8 +326,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      // Try to save to database first using type assertion
-      const { data, error } = await (supabase as any)
+      // Save to database
+      const { data, error } = await supabase
         .from('crime_reports')
         .insert([
           {
