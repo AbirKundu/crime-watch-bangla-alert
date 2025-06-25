@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -32,24 +31,25 @@ const RegisterPage = () => {
     }
   }, [isAuthenticated, authLoading, navigate]);
 
-  const isFormValid = name && email && password.length >= 6 && acceptedTerms && !emailExists;
+  const isFormValid = name && email && password.length >= 6 && acceptedTerms && !emailExists && !isChecking;
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Prevent submission if email exists or is being checked
+    if (emailExists || isChecking) {
+      toast({
+        title: "Email Issue",
+        description: emailExists ? "This email is already registered. Please use a different email." : "Please wait while we verify your email.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     if (!name || !email || !password) {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (emailExists) {
-      toast({
-        title: "Email Already Exists",
-        description: "An account with this email address already exists. Please use a different email or sign in instead.",
         variant: "destructive",
       });
       return;
@@ -76,22 +76,44 @@ const RegisterPage = () => {
     setIsLoading(true);
     
     try {
-      await register(name, email, password);
+      const result = await register(name, email, password);
       
-      toast({
-        title: "Registration Successful",
-        description: "Welcome to CrimeWatch Bangladesh! Please check your email to confirm your account.",
-      });
-      
-      navigate('/');
+      // Only show success if registration actually succeeded
+      if (result && !result.error) {
+        toast({
+          title: "Registration Successful",
+          description: "Welcome to CrimeWatch Bangladesh! Please check your email to confirm your account.",
+        });
+        navigate('/');
+      } else if (result && result.error) {
+        // Handle specific registration errors
+        let errorMessage = "Registration failed. Please try again.";
+        
+        if (result.error.message?.toLowerCase().includes('user already registered') || 
+            result.error.message?.toLowerCase().includes('already been registered') ||
+            result.error.message?.toLowerCase().includes('email address is already in use') ||
+            result.error.message?.toLowerCase().includes('already registered')) {
+          errorMessage = "An account with this email address already exists. Please try signing in instead.";
+        } else if (result.error.message?.includes('Password should be at least 6 characters')) {
+          errorMessage = "Password must be at least 6 characters long.";
+        } else if (result.error.message?.includes('Invalid email')) {
+          errorMessage = "Please enter a valid email address.";
+        } else if (result.error.message?.toLowerCase().includes('signup is disabled')) {
+          errorMessage = "Account registration is currently disabled. Please contact support.";
+        }
+        
+        toast({
+          title: "Registration Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     } catch (error: any) {
       console.error('Registration failed:', error);
       
       let errorMessage = "Registration failed. Please try again.";
       
-      if (error.name === 'DuplicateEmailError') {
-        errorMessage = error.message;
-      } else if (error.message?.toLowerCase().includes('user already registered') || 
+      if (error.message?.toLowerCase().includes('user already registered') || 
           error.message?.toLowerCase().includes('already been registered') ||
           error.message?.toLowerCase().includes('email address is already in use') ||
           error.message?.toLowerCase().includes('already registered')) {
@@ -100,8 +122,6 @@ const RegisterPage = () => {
         errorMessage = "Password must be at least 6 characters long.";
       } else if (error.message?.includes('Invalid email')) {
         errorMessage = "Please enter a valid email address.";
-      } else if (error.message?.toLowerCase().includes('signup is disabled')) {
-        errorMessage = "Account registration is currently disabled. Please contact support.";
       }
       
       toast({
@@ -163,7 +183,7 @@ const RegisterPage = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={isLoading}
-                  className={emailExists ? "border-red-500 focus:border-red-500" : ""}
+                  className={emailExists ? "border-red-500 focus:border-red-500 focus-visible:ring-red-500" : ""}
                   required 
                 />
                 {isChecking && email && (
@@ -173,9 +193,9 @@ const RegisterPage = () => {
                 )}
               </div>
               {emailExists && email && (
-                <div className="flex items-center space-x-1 text-sm text-red-600">
-                  <AlertCircle className="h-4 w-4" />
-                  <span>This email is already registered. Please use a different email.</span>
+                <div className="flex items-center space-x-1 text-sm text-red-600 bg-red-50 p-2 rounded border border-red-200">
+                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                  <span>This email is already registered. Please use a different email or <Link to="/login" className="underline font-medium">sign in instead</Link>.</span>
                 </div>
               )}
             </div>
