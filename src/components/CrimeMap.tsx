@@ -21,7 +21,7 @@ const CrimeMap = ({ fullHeight = false }) => {
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
 
-  // Filter reports to only include those that should be shown on the map
+  // Show all reports on the map - no authentication restriction
   const mappableReports = allReports.filter(report => report.showOnMap !== false);
 
   // Parse coordinates from location string or return default coordinates for Bangladesh
@@ -174,7 +174,10 @@ const CrimeMap = ({ fullHeight = false }) => {
       
       {/* Map legend - positioned in left middle */}
       <div className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-background/90 backdrop-blur-sm rounded-lg p-3 shadow-lg z-[1000]">
-        <h3 className="text-sm font-semibold mb-2">Incident Severity</h3>
+        <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+          <Shield className="h-4 w-4 text-primary" />
+          Crime Data
+        </h3>
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-xs">
             <div className="w-3 h-3 bg-red-500 rounded-full"></div>
@@ -190,13 +193,16 @@ const CrimeMap = ({ fullHeight = false }) => {
           </div>
         </div>
         <div className="mt-2 pt-2 border-t text-xs text-muted-foreground">
-          Map Reports: {mappableReports.length}
+          Incidents Shown: {mappableReports.length}
         </div>
         <div className="mt-1 text-xs text-muted-foreground">
           Total Reports: {allReports.length}
         </div>
         <div className="mt-1 text-xs text-orange-600">
           ⚠ Some locations are approximate
+        </div>
+        <div className="mt-1 text-xs text-blue-600">
+          🔓 Public access - No login required
         </div>
       </div>
     </div>

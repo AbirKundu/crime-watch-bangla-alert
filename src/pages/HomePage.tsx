@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, MapPin, ArrowRight, TrendingUp, Bell } from 'lucide-react';
+import { Shield, MapPin, ArrowRight, TrendingUp, Bell } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -12,7 +12,10 @@ const HomePage = () => {
     <div className="container py-8 px-4 sm:px-6">
       <section className="mb-12">
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold mb-3">CrimeWatch <span className="text-primary">Bangladesh</span></h1>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Shield className="h-10 w-10 text-primary" />
+            <h1 className="text-4xl font-bold">CrimeWatch <span className="text-primary">Bangladesh</span></h1>
+          </div>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Stay informed about criminal activities in your area with real-time alerts and community reporting.
             Together we can build a safer Bangladesh.
@@ -49,10 +52,19 @@ const HomePage = () => {
 
       <section className="mb-12">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Live Crime Map</h2>
+          <div className="flex items-center gap-2">
+            <Shield className="h-6 w-6 text-primary" />
+            <h2 className="text-2xl font-bold">Live Crime Map</h2>
+          </div>
           <Button variant="outline" asChild size="sm">
             <Link to="/map">View Full Map</Link>
           </Button>
+        </div>
+        <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+          <p className="text-sm text-blue-700 dark:text-blue-300 flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            The Live Crime Map is now accessible to all users - no login required to view community safety data.
+          </p>
         </div>
         <CrimeMap />
       </section>

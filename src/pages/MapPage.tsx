@@ -1,10 +1,10 @@
-
 import React, { useState, useMemo } from 'react';
 import CrimeMap from '@/components/CrimeMap';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Shield } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
 
 const MapPage = () => {
@@ -98,10 +98,19 @@ const MapPage = () => {
 
   return (
     <div className="container py-8 px-4 sm:px-6">
-      <h1 className="text-3xl font-bold mb-2">Live Crime Map</h1>
-      <p className="text-muted-foreground mb-6">
+      <div className="flex items-center gap-3 mb-2">
+        <Shield className="h-8 w-8 text-primary" />
+        <h1 className="text-3xl font-bold">Live Crime Map</h1>
+      </div>
+      <p className="text-muted-foreground mb-4">
         Interactive map showing {allReports.length} criminal incidents reported by the community across Bangladesh.
       </p>
+      <div className="mb-6 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+        <p className="text-sm text-green-700 dark:text-green-300 flex items-center gap-2">
+          <Shield className="h-4 w-4" />
+          Public Safety Data - Accessible to all community members without login
+        </p>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3">

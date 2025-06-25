@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Home, Map, AlertTriangle, MessageCircle, Info, Contact, LogIn, UserPlus, LogOut, User, Menu, X, Sun, Moon } from 'lucide-react';
+import { Home, Map, AlertTriangle, MessageCircle, Info, Contact, LogIn, UserPlus, LogOut, User, Menu, X, Sun, Moon, Shield } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
 import { useTheme } from '@/context/ThemeContext';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -47,7 +47,7 @@ const NavBar = () => {
       <nav className="bg-secondary border-b border-border/40 sticky top-0 w-full z-50 shadow-md">
         <div className="container flex justify-between items-center py-2">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-6 w-6 text-primary" />
+            <Shield className="h-6 w-6 text-primary" />
             <Link to="/" className="font-bold text-xl">CrimeWatch <span className="text-primary">Bangladesh</span></Link>
           </div>
           
