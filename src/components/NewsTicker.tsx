@@ -7,12 +7,12 @@ const NewsTicker = () => {
   const tickerRef = useRef<HTMLDivElement>(null);
   const { allReports } = useUser();
 
-  // Prepare news alerts from both user reports and official alerts
+  // Prepare news alerts from reports
   const newsAlerts = allReports.map(report => ({
     id: report.id,
     text: `${report.isUserReport ? "USER REPORT" : "ALERT"}: ${report.title} in ${report.location} - ${report.time}`,
     image: report.imageUrl,
-    isUserReport: report.isUserReport,
+    isUserReport: report.isUserReport || false,
     severity: report.severity
   }));
 

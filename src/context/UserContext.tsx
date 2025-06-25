@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,7 +16,15 @@ export interface UserReport {
   imageUrl?: string;
   created_at?: string;
   user_id?: string;
-  showOnMap?: boolean; // Add this property to fix build errors
+  showOnMap?: boolean;
+  isUserReport?: boolean;
+}
+
+interface UserProfile {
+  id: string;
+  full_name?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface UserContextType {
@@ -24,6 +33,8 @@ interface UserContextType {
   isAuthenticated: boolean;
   loading: boolean;
   allReports: UserReport[];
+  userReports: UserReport[];
+  profile: UserProfile | null;
   addReport: (report: Omit<UserReport, 'id' | 'time' | 'created_at' | 'user_id'>) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
@@ -37,7 +48,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [allReports, setAllReports] = useState<UserReport[]>([]);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const { toast } = useToast();
+
+  // Computed property for user reports
+  const userReports = allReports.filter(report => report.user_id === user?.id);
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -49,6 +64,16 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         if (session) {
           setUser(session.user);
+          // Fetch user profile
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (profileData) {
+            setProfile(profileData);
+          }
         }
       } catch (error) {
         console.error('Error fetching session:', error);
@@ -65,6 +90,22 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       } else {
         setSession(session);
         setUser(session?.user || null);
+        if (session?.user) {
+          // Fetch profile when user signs in
+          setTimeout(async () => {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+            
+            if (profileData) {
+              setProfile(profileData);
+            }
+          }, 0);
+        } else {
+          setProfile(null);
+        }
       }
     });
   }, []);
@@ -87,15 +128,16 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             id: report.id,
             title: report.title,
             location: report.location,
-            type: report.type,
+            type: report.incident_type, // Map incident_type to type
             description: report.description,
-            severity: report.severity,
+            severity: report.severity as "low" | "medium" | "high", // Type assertion for severity
             time: new Date(report.created_at).toLocaleString(),
-            reportedBy: report.reported_by,
+            reportedBy: report.reporter_name || 'Anonymous', // Map reporter_name to reportedBy
             imageUrl: report.image_url,
             created_at: report.created_at,
             user_id: report.user_id,
-            showOnMap: report.show_on_map
+            showOnMap: true, // Default value since show_on_map column doesn't exist
+            isUserReport: !!report.user_id // Mark as user report if user_id exists
           }));
           setAllReports(formattedReports);
         }
@@ -112,12 +154,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const reportToInsert = {
         title: reportData.title,
         location: reportData.location,
-        type: reportData.type,
+        incident_type: reportData.type, // Map type to incident_type
         description: reportData.description,
         severity: reportData.severity,
-        reported_by: reportData.reportedBy,
+        reporter_name: reportData.reportedBy, // Map reportedBy to reporter_name
         image_url: reportData.imageUrl,
-        show_on_map: reportData.showOnMap || false, // Map frontend field to database field
         user_id: user?.id || null
       };
 
@@ -137,15 +178,16 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         id: data.id,
         title: data.title,
         location: data.location,
-        type: data.type,
+        type: data.incident_type, // Map incident_type to type
         description: data.description,
-        severity: data.severity,
+        severity: data.severity as "low" | "medium" | "high", // Type assertion
         time: new Date(data.created_at).toLocaleString(),
-        reportedBy: data.reported_by,
+        reportedBy: data.reporter_name || 'Anonymous', // Map reporter_name to reportedBy
         imageUrl: data.image_url,
         created_at: data.created_at,
         user_id: data.user_id,
-        showOnMap: data.show_on_map
+        showOnMap: true, // Default value
+        isUserReport: !!data.user_id
       };
 
       setAllReports(prev => [newReport, ...prev]);
@@ -286,6 +328,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       isAuthenticated: !!session,
       loading,
       allReports,
+      userReports,
+      profile,
       addReport,
       login,
       register,
