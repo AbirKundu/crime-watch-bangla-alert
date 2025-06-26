@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -110,43 +109,75 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
   }, []);
 
-  useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        const { data: crime_reports, error } = await supabase
-          .from('crime_reports')
-          .select('*')
-          .order('created_at', { ascending: false });
+  // Enhanced fetchReports function with better error handling and logging
+  const fetchReports = async () => {
+    try {
+      console.log('Fetching all crime reports...');
+      const { data: crime_reports, error } = await supabase
+        .from('crime_reports')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-        if (error) {
-          console.error('Error fetching crime reports:', error);
-          return;
-        }
-
-        if (crime_reports) {
-          const formattedReports: UserReport[] = crime_reports.map(report => ({
-            id: report.id,
-            title: report.title,
-            location: report.location,
-            type: report.incident_type, // Map incident_type to type
-            description: report.description,
-            severity: report.severity as "low" | "medium" | "high", // Type assertion for severity
-            time: new Date(report.created_at).toLocaleString(),
-            reportedBy: report.reporter_name || 'Anonymous', // Map reporter_name to reportedBy
-            imageUrl: report.image_url,
-            created_at: report.created_at,
-            user_id: report.user_id,
-            showOnMap: true, // Default value since show_on_map column doesn't exist
-            isUserReport: !!report.user_id // Mark as user report if user_id exists
-          }));
-          setAllReports(formattedReports);
-        }
-      } catch (error) {
-        console.error('Failed to fetch reports:', error);
+      if (error) {
+        console.error('Error fetching crime reports:', error);
+        return;
       }
-    };
 
+      console.log('Raw crime reports from database:', crime_reports);
+
+      if (crime_reports && crime_reports.length > 0) {
+        const formattedReports: UserReport[] = crime_reports.map(report => ({
+          id: report.id,
+          title: report.title,
+          location: report.location,
+          type: report.incident_type,
+          description: report.description,
+          severity: report.severity as "low" | "medium" | "high",
+          time: new Date(report.created_at).toLocaleString(),
+          reportedBy: report.reporter_name || 'Anonymous',
+          imageUrl: report.image_url,
+          created_at: report.created_at,
+          user_id: report.user_id,
+          showOnMap: true,
+          isUserReport: !!report.user_id
+        }));
+        
+        console.log('Formatted reports:', formattedReports);
+        setAllReports(formattedReports);
+      } else {
+        console.log('No crime reports found in database');
+        setAllReports([]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch reports:', error);
+      setAllReports([]);
+    }
+  };
+
+  useEffect(() => {
     fetchReports();
+
+    // Set up real-time subscription for new reports
+    const channel = supabase
+      .channel('crime_reports_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'crime_reports'
+        },
+        (payload) => {
+          console.log('Real-time update received:', payload);
+          // Refetch all reports when there's any change
+          fetchReports();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const addReport = async (reportData: Omit<UserReport, 'id' | 'time' | 'created_at' | 'user_id'>) => {
@@ -154,10 +185,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const reportToInsert = {
         title: reportData.title,
         location: reportData.location,
-        incident_type: reportData.type, // Map type to incident_type
+        incident_type: reportData.type,
         description: reportData.description,
         severity: reportData.severity,
-        reporter_name: reportData.reportedBy, // Map reportedBy to reporter_name
+        reporter_name: reportData.reportedBy,
         image_url: reportData.imageUrl,
         user_id: user?.id || null
       };
@@ -178,15 +209,15 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         id: data.id,
         title: data.title,
         location: data.location,
-        type: data.incident_type, // Map incident_type to type
+        type: data.incident_type,
         description: data.description,
-        severity: data.severity as "low" | "medium" | "high", // Type assertion
+        severity: data.severity as "low" | "medium" | "high",
         time: new Date(data.created_at).toLocaleString(),
-        reportedBy: data.reporter_name || 'Anonymous', // Map reporter_name to reportedBy
+        reportedBy: data.reporter_name || 'Anonymous',
         imageUrl: data.image_url,
         created_at: data.created_at,
         user_id: data.user_id,
-        showOnMap: true, // Default value
+        showOnMap: true,
         isUserReport: !!data.user_id
       };
 

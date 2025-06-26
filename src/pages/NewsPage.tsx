@@ -12,16 +12,9 @@ const NewsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const { allReports, userReports, isAuthenticated } = useUser();
 
-  // Convert UserReport type to CrimeIncident type for the CrimeCard component
-  const allIncidentsAsReports: CrimeIncident[] = allReports.map(report => ({
-    ...report,
-    // Add any missing fields if needed
-  }));
-
-  const userReportsAsIncidents: CrimeIncident[] = userReports.map(report => ({
-    ...report,
-    // Add any missing fields if needed
-  }));
+  console.log('NewsPage - All reports:', allReports);
+  console.log('NewsPage - User reports:', userReports);
+  console.log('NewsPage - Is authenticated:', isAuthenticated);
 
   const filterIncidents = (incidents: CrimeIncident[], term: string) => {
     if (!term) return incidents;
@@ -34,16 +27,20 @@ const NewsPage = () => {
   };
 
   // Count today's incidents from all reports
-  const todayCount = allIncidentsAsReports.filter(incident => 
+  const todayCount = allReports.filter(incident => 
     incident.time.includes("Today") || 
     incident.time.includes("Just now") || 
     incident.time.includes("minutes ago")
   ).length;
 
   // Count this week's incidents from all reports
-  const weekCount = allIncidentsAsReports.filter(incident => 
+  const weekCount = allReports.filter(incident => 
     !incident.time.includes("month") && !incident.time.includes("year")
   ).length;
+
+  // Filter all reports and user reports
+  const filteredAllReports = filterIncidents(allReports, searchTerm);
+  const filteredUserReports = filterIncidents(userReports, searchTerm);
 
   return (
     <div className="container py-8 px-4 sm:px-6">
@@ -51,10 +48,7 @@ const NewsPage = () => {
         <div>
           <h1 className="text-3xl font-bold mb-2">News & Alerts</h1>
           <p className="text-muted-foreground">
-            {isAuthenticated 
-              ? "All crime reports from community members across Bangladesh" 
-              : "Crime reports submitted by community members across Bangladesh"
-            }
+            Crime reports submitted by community members across Bangladesh
           </p>
         </div>
         
@@ -72,8 +66,8 @@ const NewsPage = () => {
       <Tabs defaultValue="all" className="mb-8">
         <div className="flex justify-between items-center">
           <TabsList>
-            <TabsTrigger value="all">All Reports</TabsTrigger>
-            {isAuthenticated && <TabsTrigger value="user">My Reports</TabsTrigger>}
+            <TabsTrigger value="all">All Reports ({allReports.length})</TabsTrigger>
+            {isAuthenticated && <TabsTrigger value="user">My Reports ({userReports.length})</TabsTrigger>}
           </TabsList>
           
           <div className="flex gap-2">
@@ -85,12 +79,12 @@ const NewsPage = () => {
         <div className="mt-6">
           <TabsContent value="all" className="mt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filterIncidents(allIncidentsAsReports, searchTerm).map(incident => (
+              {filteredAllReports.map(incident => (
                 <CrimeCard key={incident.id} incident={incident} />
               ))}
             </div>
             
-            {filterIncidents(allIncidentsAsReports, searchTerm).length === 0 && (
+            {filteredAllReports.length === 0 && (
               <div className="text-center py-12">
                 <MessageCircle className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-xl font-semibold mb-2">No reports found</h3>
@@ -106,12 +100,12 @@ const NewsPage = () => {
           {isAuthenticated && (
             <TabsContent value="user" className="mt-0">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filterIncidents(userReportsAsIncidents, searchTerm).map(incident => (
+                {filteredUserReports.map(incident => (
                   <CrimeCard key={incident.id} incident={incident} />
                 ))}
               </div>
               
-              {filterIncidents(userReportsAsIncidents, searchTerm).length === 0 && (
+              {filteredUserReports.length === 0 && (
                 <div className="text-center py-12">
                   <MessageCircle className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                   <h3 className="text-xl font-semibold mb-2">No personal reports found</h3>
