@@ -14,7 +14,7 @@ export interface UserReport {
   reportedBy: string;
   imageUrl?: string;
   created_at?: string;
-  user_id?: string;
+  user_id?: string | null;
   showOnMap?: boolean;
   isUserReport?: boolean;
 }
@@ -50,8 +50,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const { toast } = useToast();
 
-  // Computed property for user reports
-  const userReports = allReports.filter(report => report.user_id === user?.id);
+  // Computed property for user reports - only reports where user_id matches current user
+  const userReports = allReports.filter(report => report.user_id === user?.id && report.user_id !== null);
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -139,7 +139,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           created_at: report.created_at,
           user_id: report.user_id,
           showOnMap: true,
-          isUserReport: !!report.user_id
+          isUserReport: report.user_id !== null && !!report.user_id
         }));
         
         console.log('Formatted reports:', formattedReports);
@@ -190,7 +190,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         severity: reportData.severity,
         reporter_name: reportData.reportedBy,
         image_url: reportData.imageUrl,
-        user_id: user?.id || null
+        user_id: user?.id || null // Allow NULL for anonymous reports
       };
 
       const { data, error } = await supabase
@@ -218,7 +218,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         created_at: data.created_at,
         user_id: data.user_id,
         showOnMap: true,
-        isUserReport: !!data.user_id
+        isUserReport: data.user_id !== null && !!data.user_id
       };
 
       setAllReports(prev => [newReport, ...prev]);
