@@ -1,12 +1,19 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useUser } from '@/context/UserContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Trash2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const AdminPage = () => {
   const { allReports, userReports, isAuthenticated } = useUser();
+  const [deletingReports, setDeletingReports] = useState<Set<string>>(new Set());
+  const { toast } = useToast();
 
   console.log('AdminPage - All reports:', allReports);
   console.log('AdminPage - User reports:', userReports);
@@ -29,12 +36,50 @@ const AdminPage = () => {
     }
   };
 
+  const handleDeleteReport = async (reportId: string) => {
+    setDeletingReports(prev => new Set(prev).add(reportId));
+    
+    try {
+      const { error } = await supabase
+        .from('crime_reports')
+        .delete()
+        .eq('id', reportId);
+
+      if (error) {
+        console.error('Error deleting report:', error);
+        toast({
+          title: "Error",
+          description: "Failed to delete the report. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Report has been deleted successfully.",
+        });
+      }
+    } catch (error) {
+      console.error('Failed to delete report:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete the report. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingReports(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(reportId);
+        return newSet;
+      });
+    }
+  };
+
   return (
     <div className="container py-8 px-4 sm:px-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Admin Panel</h1>
         <p className="text-muted-foreground">
-          View all crime reports and debug data visibility
+          View and manage all crime reports
         </p>
       </div>
 
@@ -52,7 +97,7 @@ const AdminPage = () => {
         <Card>
           <CardHeader>
             <CardTitle>User Reports</CardTitle>
-            <CardDescription>Reports by authenticated user</CardDescription>
+            <CardDescription>Reports by authenticated users</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{userReports.length}</div>
@@ -75,7 +120,7 @@ const AdminPage = () => {
       <Card>
         <CardHeader>
           <CardTitle>All Reports ({allReports.length})</CardTitle>
-          <CardDescription>Complete list of all crime reports</CardDescription>
+          <CardDescription>Complete list of all crime reports with management options</CardDescription>
         </CardHeader>
         <CardContent>
           {allReports.length === 0 ? (
@@ -98,6 +143,7 @@ const AdminPage = () => {
                   <TableHead>Reporter</TableHead>
                   <TableHead>User ID</TableHead>
                   <TableHead>Created</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -123,6 +169,41 @@ const AdminPage = () => {
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {report.created_at ? formatDate(report.created_at) : report.time}
+                    </TableCell>
+                    <TableCell>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            disabled={deletingReports.has(report.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Report</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete this report? This action cannot be undone.
+                              <br />
+                              <br />
+                              <strong>Report:</strong> {report.title}
+                              <br />
+                              <strong>Location:</strong> {report.location}
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteReport(report.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete Report
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))}
