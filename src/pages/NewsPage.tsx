@@ -38,7 +38,7 @@ const NewsPage = () => {
     !incident.time.includes("month") && !incident.time.includes("year")
   ).length;
 
-  // Filter all reports and user reports
+  // Filter all reports and user reports based on search term
   const filteredAllReports = filterIncidents(allReports, searchTerm);
   const filteredUserReports = filterIncidents(userReports, searchTerm);
 
@@ -66,8 +66,8 @@ const NewsPage = () => {
       <Tabs defaultValue="all" className="mb-8">
         <div className="flex justify-between items-center">
           <TabsList>
-            <TabsTrigger value="all">All Reports ({allReports.length})</TabsTrigger>
-            {isAuthenticated && <TabsTrigger value="user">My Reports ({userReports.length})</TabsTrigger>}
+            <TabsTrigger value="all">All Reports ({filteredAllReports.length})</TabsTrigger>
+            {isAuthenticated && <TabsTrigger value="user">My Reports ({filteredUserReports.length})</TabsTrigger>}
           </TabsList>
           
           <div className="flex gap-2">
@@ -89,9 +89,7 @@ const NewsPage = () => {
                 <MessageCircle className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-xl font-semibold mb-2">No reports found</h3>
                 <p className="text-muted-foreground">
-                  {allReports.length === 0 
-                    ? "No reports have been submitted yet. Be the first to report an incident!" 
-                    : "Try adjusting your search terms"}
+                  {searchTerm ? "Try adjusting your search terms" : "No reports have been submitted yet. Be the first to report an incident!"}
                 </p>
               </div>
             )}
@@ -110,9 +108,7 @@ const NewsPage = () => {
                   <MessageCircle className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                   <h3 className="text-xl font-semibold mb-2">No personal reports found</h3>
                   <p className="text-muted-foreground">
-                    {userReports.length === 0 
-                      ? "You haven't submitted any reports yet. Report an incident to see it here!" 
-                      : "Try adjusting your search terms"}
+                    {searchTerm ? "Try adjusting your search terms" : "You haven't submitted any reports yet. Report an incident to see it here!"}
                   </p>
                 </div>
               )}

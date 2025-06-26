@@ -15,6 +15,14 @@ const NotFound = () => {
     );
   }, [location.pathname]);
 
+  const handleGoBack = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.href = '/';
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center space-y-6 p-8">
@@ -33,11 +41,9 @@ const NotFound = () => {
               Go Home
             </Link>
           </Button>
-          <Button asChild variant="outline" onClick={() => window.history.back()}>
-            <span className="cursor-pointer">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Go Back
-            </span>
+          <Button variant="outline" onClick={handleGoBack}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Go Back
           </Button>
         </div>
       </div>
